@@ -1,0 +1,1450 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CS PYQ Archive — Sammilani Mahavidyalya</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,600;0,700;1,400&family=Tinos:wght@400;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0b1420;
+        --bg-2: #101d2c;
+        --panel: #0f1c2b;
+        --panel-2: #13233570;
+        --ink: #dfe6ee;
+        --ink-soft: #8fa1b3;
+        --ink-dim: #5e6f80;
+        --teal: #2ec4c1;
+        --teal-dim: #1c8a88;
+        --silver: #c7d0d8;
+        --line: #22384a;
+        --line-soft: #1a2c3c;
+        --good: #3fae7a;
+        --amber: #c99a3f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(
+            ellipse 900px 500px at 15% -10%,
+            rgba(46, 196, 193, 0.08),
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse 700px 500px at 100% 10%,
+            rgba(46, 196, 193, 0.05),
+            transparent 55%
+          ),
+          var(--bg);
+        color: var(--ink);
+        font-family: "Tinos", Georgia, serif;
+        font-size: 16px;
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+        min-height: 100vh;
+      }
+
+      .wrap {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 0 18px 80px;
+        position: relative;
+        z-index: 1;
+      }
+
+      a {
+        color: var(--teal);
+      }
+
+      /* ===== LETTERHEAD ===== */
+      .letterhead {
+        border-bottom: 1px solid var(--line);
+        padding: 18px 0 22px;
+        margin-top: 0;
+        position: relative;
+      }
+      .lh-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10.5px;
+        color: var(--ink-dim);
+        letter-spacing: 0.04em;
+        padding: 14px 0 18px;
+        text-transform: uppercase;
+      }
+      .lh-top .stamp-date {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--ink-soft);
+        border: 1px solid var(--line);
+        padding: 5px 10px;
+        background: var(--panel-2);
+      }
+      .lh-top .stamp-date .dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--teal);
+        flex-shrink: 0;
+        box-shadow: 0 0 6px var(--teal);
+      }
+      .lh-top .ref {
+        white-space: nowrap;
+        color: var(--ink-dim);
+      }
+
+      .lh-main {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        padding-top: 4px;
+      }
+      .lh-crest {
+        width: 84px;
+        height: 84px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        box-shadow:
+          0 0 0 1px rgba(46, 196, 193, 0.25),
+          0 8px 26px rgba(0, 0, 0, 0.45);
+      }
+      .lh-crest img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        border-radius: 50%;
+      }
+      .lh-text {
+        flex: 1;
+        min-width: 0;
+      }
+      .lh-college {
+        font-family: "Noto Serif", serif;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--teal);
+      }
+      .lh-dept {
+        font-family: "Noto Serif", serif;
+        font-weight: 700;
+        font-size: 28px;
+        margin: 5px 0 3px;
+        letter-spacing: 0.005em;
+        color: var(--ink);
+      }
+      .lh-sub {
+        font-family: "Noto Serif", serif;
+        font-style: italic;
+        font-size: 14px;
+        color: var(--ink-soft);
+      }
+      .lh-tag {
+        margin-top: 9px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.13em;
+        color: var(--ink-dim);
+      }
+      .lh-tag b {
+        color: var(--teal-dim);
+        font-weight: 700;
+      }
+
+      @media (max-width: 560px) {
+        .lh-main {
+          gap: 14px;
+        }
+        .lh-crest {
+          width: 60px;
+          height: 60px;
+        }
+        .lh-dept {
+          font-size: 21px;
+        }
+        .lh-top {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+        }
+      }
+
+      /* ===== INTRO STRIP ===== */
+      .intro {
+        margin: 20px 0 6px;
+        padding: 14px 16px;
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        border-left: 2px solid var(--teal-dim);
+        font-size: 14.5px;
+        color: var(--ink-soft);
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+      }
+      .intro .pin {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10.5px;
+        font-weight: 700;
+        color: var(--teal);
+        border: 1px solid var(--teal-dim);
+        padding: 2px 6px;
+        flex-shrink: 0;
+        margin-top: 1px;
+        letter-spacing: 0.04em;
+      }
+      .intro i {
+        color: var(--ink);
+        font-style: italic;
+      }
+
+      /* ===== CONTROLS ===== */
+      .controls {
+        margin: 22px 0 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .search-row {
+        display: flex;
+        gap: 8px;
+        flex: 1;
+        min-width: 220px;
+      }
+      input[type="text"],
+      select {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        padding: 9px 10px;
+        color: var(--ink);
+      }
+      input[type="text"] {
+        flex: 1;
+        min-width: 140px;
+      }
+      input[type="text"]::placeholder {
+        color: var(--ink-dim);
+      }
+      input[type="text"]:focus,
+      select:focus {
+        outline: none;
+        border-color: var(--teal-dim);
+      }
+      select {
+        cursor: pointer;
+      }
+      select option {
+        background: var(--panel);
+        color: var(--ink);
+      }
+
+      .editmode-btn {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        background: transparent;
+        color: var(--teal);
+        border: 1px solid var(--teal-dim);
+        padding: 9px 14px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition:
+          background 0.15s,
+          color 0.15s;
+      }
+      .editmode-btn.active {
+        background: var(--teal-dim);
+        border-color: var(--teal-dim);
+        color: #04161a;
+      }
+      .editmode-btn:hover {
+        background: rgba(46, 196, 193, 0.12);
+      }
+      .editmode-btn.active:hover {
+        background: var(--teal-dim);
+      }
+      .editmode-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      /* ===== LOGIN MODAL ===== */
+      .login-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(5, 10, 16, 0.78);
+        backdrop-filter: blur(3px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+        padding: 18px;
+      }
+      .login-overlay.show {
+        display: flex;
+      }
+      .login-card {
+        width: 100%;
+        max-width: 340px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-top: 2px solid var(--teal);
+        padding: 26px 24px 22px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      }
+      .login-card .lc-eyebrow {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-dim);
+        margin-bottom: 4px;
+      }
+      .login-card h2 {
+        font-family: "Noto Serif", serif;
+        font-size: 19px;
+        margin: 0 0 16px;
+        color: var(--ink);
+      }
+      .login-field {
+        margin-bottom: 12px;
+      }
+      .login-field label {
+        display: block;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10.5px;
+        color: var(--ink-soft);
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .login-field input {
+        width: 100%;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        background: var(--bg-2);
+        border: 1px solid var(--line);
+        color: var(--ink);
+        padding: 9px 10px;
+      }
+      .login-field input:focus {
+        outline: none;
+        border-color: var(--teal-dim);
+      }
+      .login-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 18px;
+      }
+      .login-submit {
+        flex: 1;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        background: var(--teal-dim);
+        color: #04161a;
+        border: 1px solid var(--teal-dim);
+        padding: 10px;
+        cursor: pointer;
+      }
+      .login-submit:hover {
+        background: var(--teal);
+      }
+      .login-cancel {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        background: transparent;
+        color: var(--ink-dim);
+        border: 1px solid var(--line);
+        padding: 10px 14px;
+        cursor: pointer;
+      }
+      .login-cancel:hover {
+        border-color: var(--ink-soft);
+        color: var(--ink-soft);
+      }
+      .login-error {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: #d9685f;
+        margin-top: 10px;
+        display: none;
+      }
+      .login-error.show {
+        display: block;
+      }
+      .login-note {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 9.5px;
+        color: var(--ink-dim);
+        margin-top: 16px;
+        line-height: 1.5;
+        border-top: 1px dashed var(--line);
+        padding-top: 12px;
+      }
+
+      .session-pill {
+        display: none;
+        align-items: center;
+        gap: 7px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10.5px;
+        color: var(--good);
+        border: 1px solid var(--line);
+        padding: 9px 12px;
+        background: var(--panel-2);
+      }
+      .session-pill.show {
+        display: flex;
+      }
+      .session-pill .dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--good);
+        flex-shrink: 0;
+      }
+      .logout-link {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        color: var(--ink-dim);
+        text-decoration: underline;
+        cursor: pointer;
+        margin-left: 8px;
+      }
+      .logout-link:hover {
+        color: var(--ink-soft);
+      }
+
+      /* ===== YEAR BLOCKS ===== */
+      .year-block {
+        margin-top: 26px;
+        border-top: 1px solid var(--line);
+      }
+      .year-head {
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        padding: 12px 4px 8px;
+        cursor: pointer;
+        user-select: none;
+      }
+      .year-head:hover .year-num {
+        color: var(--teal);
+      }
+      .year-num {
+        font-family: "Noto Serif", serif;
+        font-weight: 700;
+        font-size: 24px;
+        color: var(--silver);
+        min-width: 74px;
+        transition: color 0.15s;
+      }
+      .year-meta {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10.5px;
+        color: var(--ink-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .delete-year-btn {
+        display: none;
+        margin-left: auto;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        background: transparent;
+        color: #d9685f;
+        border: 1px solid #6b3530;
+        padding: 3px 8px;
+        cursor: pointer;
+      }
+      body.editing .delete-year-btn {
+        display: inline-block;
+      }
+      .delete-year-btn:hover {
+        background: rgba(217, 104, 95, 0.15);
+      }
+
+      .year-toggle {
+        margin-left: 12px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--ink-dim);
+        border: 1px solid var(--line);
+        padding: 2px 8px;
+      }
+      body.editing .year-toggle {
+        margin-left: 0;
+      }
+
+      .year-body {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0;
+        overflow: hidden;
+        max-height: 0;
+        transition: max-height 0.28s ease;
+      }
+      .year-block.open .year-body {
+        max-height: 4000px;
+      }
+      .year-block.open .year-toggle::after {
+        content: " \2212";
+      }
+      .year-toggle::after {
+        content: " +";
+      }
+
+      /* ===== SEMESTER ===== */
+      .sem {
+        border-top: 1px dashed var(--line-soft);
+        padding: 14px 4px 16px;
+      }
+      .sem-title {
+        font-family: "Noto Serif", serif;
+        font-weight: 700;
+        font-size: 14.5px;
+        margin-bottom: 8px;
+        color: var(--ink);
+      }
+      .sem-title .rom {
+        display: inline-block;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10.5px;
+        font-weight: 700;
+        color: #04161a;
+        background: var(--teal);
+        padding: 1px 6px;
+        margin-right: 8px;
+        letter-spacing: 0.04em;
+      }
+
+      .paper-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .paper-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 4px;
+        font-size: 14.5px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      }
+      .paper-row:hover {
+        background: rgba(46, 196, 193, 0.04);
+      }
+      .paper-dot {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--ink-dim);
+        width: 18px;
+        flex-shrink: 0;
+      }
+      .paper-name {
+        flex: 1;
+        color: var(--ink);
+        min-width: 0;
+      }
+      .paper-name input {
+        width: 100%;
+        border: none;
+        background: transparent;
+        font-family: "Tinos", Georgia, serif;
+        font-size: 14.5px;
+        color: var(--ink);
+        padding: 2px 0;
+        border-bottom: 1px dotted transparent;
+      }
+      .paper-name input:focus {
+        outline: none;
+        border-bottom: 1px dotted var(--teal);
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .paper-link-status {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10.5px;
+        flex-shrink: 0;
+      }
+      .status-missing {
+        color: var(--amber);
+      }
+      .status-ok {
+        color: var(--good);
+      }
+
+      .paper-action {
+        flex-shrink: 0;
+      }
+      .dl-link {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        text-decoration: none;
+        border: 1px solid var(--teal-dim);
+        color: var(--teal);
+        padding: 3px 9px;
+        white-space: nowrap;
+        transition:
+          background 0.15s,
+          color 0.15s;
+      }
+      .dl-link:hover {
+        background: var(--teal-dim);
+        color: #04161a;
+      }
+      .dl-disabled {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--ink-dim);
+        border: 1px solid var(--line);
+        padding: 3px 9px;
+        white-space: nowrap;
+        cursor: default;
+      }
+
+      .edit-link-input {
+        display: none;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        width: 170px;
+        border: 1px solid var(--amber);
+        padding: 3px 6px;
+        background: #1a1508;
+        color: var(--ink);
+      }
+      body.editing .edit-link-input {
+        display: inline-block;
+      }
+      body.editing .paper-action {
+        display: none;
+      }
+      body.editing .paper-link-status {
+        display: none;
+      }
+
+      .delete-row-btn {
+        display: none;
+        flex-shrink: 0;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 15px;
+        line-height: 1;
+        background: transparent;
+        color: #d9685f;
+        border: 1px solid #6b3530;
+        width: 22px;
+        height: 22px;
+        padding: 0;
+        cursor: pointer;
+      }
+      body.editing .delete-row-btn {
+        display: inline-block;
+      }
+      .delete-row-btn:hover {
+        background: rgba(217, 104, 95, 0.15);
+      }
+
+      .paper-row.is-deleted {
+        opacity: 0.45;
+      }
+      .paper-row.is-deleted .paper-name input {
+        color: var(--ink-dim);
+        font-style: italic;
+      }
+
+      .add-year-row {
+        display: none;
+        align-items: center;
+        gap: 10px;
+        margin-top: 18px;
+        padding: 10px 12px;
+        background: var(--panel-2);
+        border: 1px dashed var(--teal-dim);
+      }
+      body.editing .add-year-row {
+        display: flex;
+      }
+      .add-year-row input[type="number"] {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        background: var(--bg-2);
+        border: 1px solid var(--line);
+        color: var(--ink);
+        padding: 7px 9px;
+        width: 110px;
+      }
+      .add-year-row input[type="number"]:focus {
+        outline: none;
+        border-color: var(--teal-dim);
+      }
+      .add-year-btn {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        background: transparent;
+        color: var(--teal);
+        border: 1px solid var(--teal-dim);
+        padding: 7px 12px;
+        cursor: pointer;
+      }
+      .add-year-btn:hover {
+        background: rgba(46, 196, 193, 0.12);
+      }
+      .add-year-msg {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--ink-dim);
+      }
+      .add-year-msg.error {
+        color: #d9685f;
+      }
+      .add-year-msg.success {
+        color: var(--good);
+      }
+
+      .no-results {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        color: var(--ink-dim);
+        padding: 24px 4px;
+        text-align: center;
+        display: none;
+      }
+
+      /* ===== FOOTER ===== */
+      footer {
+        margin-top: 56px;
+        padding-top: 18px;
+        border-top: 1px solid var(--line);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10.5px;
+        color: var(--ink-dim);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      footer .credit b {
+        color: var(--teal);
+      }
+
+      .legend {
+        margin-top: 14px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        color: var(--ink-dim);
+      }
+
+      ::selection {
+        background: var(--teal-dim);
+        color: #04161a;
+      }
+
+      @media (max-width: 560px) {
+        .controls {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .search-row {
+          min-width: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="letterhead">
+        <div class="lh-top">
+          <span class="stamp-date">
+            <span class="dot"></span>
+            <span id="todayDate"></span>
+          </span>
+          <span class="ref">REF: CS/PYQ/ARCHIVE</span>
+        </div>
+        <div class="lh-main">
+          <div class="lh-crest">
+            <img
+              src="logo.png"
+              alt="Department of Computer Science, Sammilani Mahavidyalya"
+            />
+          </div>
+          <div class="lh-text">
+            <div class="lh-college">
+              Sammilani Mahavidyalya &#8226; Calcutta University
+            </div>
+            <h1 class="lh-dept">Question Paper Archive</h1>
+            <div class="lh-sub">B.Sc. Computer Science (Honours)</div>
+            <div class="lh-tag">
+              <b>Department of Computer Science</b> &#8226; Sammilani
+              Mahavidyalya
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="intro">
+        <span class="pin">NOTE</span>
+        <span
+          >This page lists previous year question papers semester-wise (1st–6th)
+          from 2019 onward. Links are being added gradually — rows marked
+          <i>pending</i> don't have one uploaded yet. Found a mistake or have a
+          paper to contribute? Reach the maintainer below.</span
+        >
+      </div>
+
+      <div class="controls">
+        <div class="search-row">
+          <input
+            type="text"
+            id="searchBox"
+            placeholder="search paper / subject / year..."
+          />
+          <select id="semFilter">
+            <option value="all">All semesters</option>
+            <option value="1">1st sem</option>
+            <option value="2">2nd sem</option>
+            <option value="3">3rd sem</option>
+            <option value="4">4th sem</option>
+            <option value="5">5th sem</option>
+            <option value="6">6th sem</option>
+          </select>
+        </div>
+        <button class="editmode-btn" id="editToggle">enable edit mode</button>
+        <span class="session-pill" id="sessionPill"
+          ><span class="dot"></span>signed in<span
+            class="logout-link"
+            id="logoutLink"
+            >log out</span
+          ></span
+        >
+      </div>
+
+      <div class="login-overlay" id="loginOverlay">
+        <div class="login-card">
+          <div class="lc-eyebrow">Admin Access</div>
+          <h2>Sign in to edit</h2>
+          <div class="login-field">
+            <label for="loginEmail">Email</label>
+            <input
+              type="email"
+              id="loginEmail"
+              autocomplete="off"
+              placeholder="email"
+            />
+          </div>
+          <div class="login-field">
+            <label for="loginPass">Password</label>
+            <input
+              type="password"
+              id="loginPass"
+              autocomplete="off"
+              placeholder="password"
+            />
+          </div>
+          <div class="login-error" id="loginError">
+            Incorrect email or password.
+          </div>
+          <div class="login-actions">
+            <button class="login-submit" id="loginSubmit">Sign in</button>
+            <button class="login-cancel" id="loginCancel">Cancel</button>
+          </div>
+          <div class="login-note">
+            This is a admin-side gate meant to keep casual visitors from editing
+          </div>
+        </div>
+      </div>
+
+      <div class="add-year-row" id="addYearRow">
+        <input
+          type="number"
+          id="newYearInput"
+          placeholder="e.g. 2027"
+          step="1"
+        />
+        <button class="add-year-btn" id="addYearBtn">+ add year</button>
+        <span class="add-year-msg" id="addYearMsg"></span>
+      </div>
+
+      <div id="yearsContainer"></div>
+      <div class="no-results" id="noResults">— no matching papers found —</div>
+
+      <div class="legend">
+        status: <span class="status-ok">●</span> link added &nbsp;&nbsp;
+        <span class="status-missing">●</span> pending upload
+      </div>
+
+      <footer>
+        <span class="credit"
+          >Developed by <b>GHOST</b> — for the CS batch, Sammilani Mahavidyalya
+          Batch : 2024-2028</span
+        >
+      </footer>
+    </div>
+
+    <script>
+      // ===== CONFIG =====
+      const START_YEAR_DEFAULT = 2019;
+      const CURRENT_YEAR = new Date().getFullYear();
+      const SEM_ROMAN = { 1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI" };
+      const SEM_WORD = {
+        1: "1st",
+        2: "2nd",
+        3: "3rd",
+        4: "4th",
+        5: "5th",
+        6: "6th",
+      };
+      const DEFAULT_PAPER_COUNT = 10;
+
+      function defaultPaperLabel(i) {
+        return `Paper ${i}`;
+      }
+
+      function buildYears() {
+        // Combine the default range with any manually-added years, de-duplicated, descending
+        const extra = (state.extraYears || []).filter((y) =>
+          Number.isInteger(y),
+        );
+        const hidden = new Set(state.hiddenYears || []);
+        const all = new Set(extra);
+        for (let y = CURRENT_YEAR; y >= START_YEAR_DEFAULT; y--) {
+          all.add(y);
+        }
+        return Array.from(all)
+          .filter((y) => !hidden.has(y))
+          .sort((a, b) => b - a);
+      }
+
+      function makeId(year, sem, idx) {
+        return `y${year}-s${sem}-p${idx}`;
+      }
+
+      // ===== STATE =====
+      let state = { papers: {}, extraYears: [], hiddenYears: [] };
+      let editMode = false;
+
+      function defaultStateForAll() {
+        const years = buildYears();
+        const papers = {};
+        years.forEach((y) => {
+          for (let s = 1; s <= 6; s++) {
+            for (let i = 1; i <= DEFAULT_PAPER_COUNT; i++) {
+              const id = makeId(y, s, i);
+              papers[id] = { name: defaultPaperLabel(i), link: "" };
+            }
+          }
+        });
+        return {
+          papers,
+          extraYears: state.extraYears || [],
+          hiddenYears: state.hiddenYears || [],
+        };
+      }
+
+      // ===== STORAGE =====
+      async function loadState() {
+        try {
+          const result = await window.storage.get("pyq-state", false);
+          if (result && result.value) {
+            const parsed = JSON.parse(result.value);
+            // Load extraYears/hiddenYears first so buildYears() inside defaultStateForAll sees them
+            state.extraYears = Array.isArray(parsed.extraYears)
+              ? parsed.extraYears
+              : [];
+            state.hiddenYears = Array.isArray(parsed.hiddenYears)
+              ? parsed.hiddenYears
+              : [];
+            const def = defaultStateForAll();
+            state = {
+              papers: { ...def.papers, ...parsed.papers },
+              extraYears: state.extraYears,
+              hiddenYears: state.hiddenYears,
+            };
+            return;
+          }
+        } catch (e) {
+          // key not found or error — fall back to defaults
+        }
+        state = defaultStateForAll();
+      }
+
+      let saveTimer = null;
+      function queueSave() {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(saveState, 400);
+      }
+      async function saveState() {
+        try {
+          await window.storage.set("pyq-state", JSON.stringify(state), false);
+        } catch (e) {
+          console.error("save failed", e);
+        }
+      }
+
+      function addYear(year) {
+        if (!Number.isInteger(year)) return false;
+        const existing = buildYears();
+        if (existing.includes(year)) return false;
+        state.extraYears = state.extraYears || [];
+        state.extraYears.push(year);
+        // ensure paper slots exist for the new year
+        for (let s = 1; s <= 6; s++) {
+          for (let i = 1; i <= DEFAULT_PAPER_COUNT; i++) {
+            const id = makeId(year, s, i);
+            if (!state.papers[id])
+              state.papers[id] = { name: defaultPaperLabel(i), link: "" };
+          }
+        }
+        queueSave();
+        return true;
+      }
+
+      function deleteYear(year) {
+        // remove from extraYears if it was manually added
+        state.extraYears = (state.extraYears || []).filter((y) => y !== year);
+        // mark the year as hidden if it's part of the default range (so it doesn't reappear)
+        state.hiddenYears = state.hiddenYears || [];
+        if (
+          year >= START_YEAR_DEFAULT &&
+          year <= CURRENT_YEAR &&
+          !state.hiddenYears.includes(year)
+        ) {
+          state.hiddenYears.push(year);
+        }
+        // drop its paper data
+        for (let s = 1; s <= 6; s++) {
+          for (let i = 1; i <= DEFAULT_PAPER_COUNT; i++) {
+            delete state.papers[makeId(year, s, i)];
+          }
+        }
+        queueSave();
+      }
+
+      function deletePaperRow(id) {
+        if (state.papers[id]) {
+          state.papers[id] = { name: "", link: "", hidden: true };
+          queueSave();
+        }
+      }
+
+      // ===== RENDER =====
+      const yearsContainer = document.getElementById("yearsContainer");
+
+      function render() {
+        // remember which years were open so re-renders (e.g. toggling edit mode) don't collapse them
+        const openYears = new Set(
+          Array.from(document.querySelectorAll(".year-block.open")).map(
+            (b) => b.dataset.year,
+          ),
+        );
+        const isFirstRender =
+          openYears.size === 0 && yearsContainer.innerHTML.trim() === "";
+
+        yearsContainer.innerHTML = "";
+        const years = buildYears();
+
+        years.forEach((year, yi) => {
+          const block = document.createElement("div");
+          const shouldOpen = isFirstRender
+            ? yi === 0
+            : openYears.has(String(year));
+          block.className = "year-block" + (shouldOpen ? " open" : "");
+          block.dataset.year = year;
+
+          const isCurrent = year === CURRENT_YEAR;
+          block.innerHTML = `
+      <div class="year-head" data-toggle="${year}">
+        <span class="year-num">${year}</span>
+        <span class="year-meta">${isCurrent ? "current session" : "academic year"}</span>
+        <button class="delete-year-btn" data-year="${year}" title="Delete this year">delete year</button>
+        <span class="year-toggle"></span>
+      </div>
+      <div class="year-body"></div>
+    `;
+
+          const body = block.querySelector(".year-body");
+          for (let s = 1; s <= 6; s++) {
+            const sem = document.createElement("div");
+            sem.className = "sem";
+            sem.dataset.sem = s;
+            sem.innerHTML = `<div class="sem-title"><span class="rom">SEM ${SEM_ROMAN[s]}</span>${SEM_WORD[s]} Semester</div>`;
+
+            const ul = document.createElement("ul");
+            ul.className = "paper-list";
+
+            for (let i = 1; i <= DEFAULT_PAPER_COUNT; i++) {
+              const id = makeId(year, s, i);
+              const entry = state.papers[id] || {
+                name: defaultPaperLabel(i),
+                link: "",
+              };
+
+              // Soft-deleted rows are skipped entirely outside edit mode.
+              if (entry.hidden && !editMode) continue;
+
+              const li = document.createElement("li");
+              li.className = "paper-row" + (entry.hidden ? " is-deleted" : "");
+              li.dataset.id = id;
+
+              const hasLink = entry.link && entry.link.trim().length > 0;
+
+              li.innerHTML = `
+          <span class="paper-dot">${String(i).padStart(2, "0")}</span>
+          <span class="paper-name">
+            <input type="text" value="${escapeAttr(entry.name)}" data-field="name" data-id="${id}" ${editMode ? "" : "readonly"} placeholder="${entry.hidden ? "deleted — type to restore" : ""}">
+          </span>
+          <span class="paper-link-status ${hasLink ? "status-ok" : "status-missing"}">${hasLink ? "added" : "pending"}</span>
+          <span class="paper-action">
+            ${
+              hasLink
+                ? `<a class="dl-link" href="${escapeAttr(entry.link)}" target="_blank" rel="noopener">view</a>`
+                : `<span class="dl-disabled">no link</span>`
+            }
+          </span>
+          <input type="text" class="edit-link-input" placeholder="paste link here" value="${escapeAttr(entry.link)}" data-field="link" data-id="${id}">
+          <button class="delete-row-btn" data-id="${id}" title="Delete this paper">&times;</button>
+        `;
+              ul.appendChild(li);
+            }
+
+            sem.appendChild(ul);
+            body.appendChild(sem);
+          }
+
+          yearsContainer.appendChild(block);
+        });
+
+        attachRowListeners();
+        applyFilters();
+      }
+
+      function escapeAttr(str) {
+        return String(str || "")
+          .replace(/&/g, "&amp;")
+          .replace(/"/g, "&quot;")
+          .replace(/</g, "&lt;");
+      }
+
+      function attachRowListeners() {
+        document.querySelectorAll(".year-head").forEach((h) => {
+          h.addEventListener("click", (e) => {
+            if (e.target.closest(".delete-year-btn")) return;
+            h.closest(".year-block").classList.toggle("open");
+          });
+        });
+
+        document.querySelectorAll(".delete-year-btn").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const year = parseInt(btn.dataset.year, 10);
+            if (
+              !confirm(
+                `Delete the entire ${year} entry? This removes all its papers and links.`,
+              )
+            )
+              return;
+            deleteYear(year);
+            render();
+          });
+        });
+
+        document.querySelectorAll(".delete-row-btn").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const id = btn.dataset.id;
+            deletePaperRow(id);
+            render();
+          });
+        });
+
+        document.querySelectorAll("input[data-field]").forEach((inp) => {
+          inp.addEventListener("input", (e) => {
+            const id = e.target.dataset.id;
+            const field = e.target.dataset.field;
+            if (!state.papers[id]) state.papers[id] = { name: "", link: "" };
+            // typing into a deleted row's name field restores it
+            if (
+              field === "name" &&
+              state.papers[id].hidden &&
+              e.target.value.trim().length > 0
+            ) {
+              state.papers[id].hidden = false;
+              e.target.placeholder = "";
+              const row = e.target.closest(".paper-row");
+              if (row) row.classList.remove("is-deleted");
+            }
+            state.papers[id][field] = e.target.value;
+            queueSave();
+
+            if (field === "link") {
+              const row = e.target.closest(".paper-row");
+              const hasLink = e.target.value.trim().length > 0;
+              const statusEl = row.querySelector(".paper-link-status");
+              statusEl.textContent = hasLink ? "added" : "pending";
+              statusEl.className =
+                "paper-link-status " +
+                (hasLink ? "status-ok" : "status-missing");
+              const actionEl = row.querySelector(".paper-action");
+              actionEl.innerHTML = hasLink
+                ? `<a class="dl-link" href="${escapeAttr(e.target.value)}" target="_blank" rel="noopener">view</a>`
+                : `<span class="dl-disabled">no link</span>`;
+            }
+          });
+        });
+      }
+
+      // ===== AUTH (client-side gate only — see login-note in markup) =====
+      // Credentials are not stored in plaintext in this file; they're checked via
+      // SHA-256 digest comparison so a plain text search of the page won't reveal them.
+      // This still does NOT protect against anyone reading/running the JS itself.
+      const AUTH_EMAIL_HASH =
+        "1eb8957294136f321465d733c4272e57015fb7536f584df57161d99a192a1568";
+      const AUTH_PASS_HASH =
+        "bd25dacdad42b4dd137a207f5a8693053527a5e6f62b88888c8a9b2533505b21";
+
+      async function sha256(text) {
+        const enc = new TextEncoder().encode(text);
+        const buf = await crypto.subtle.digest("SHA-256", enc);
+        return Array.from(new Uint8Array(buf))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+      }
+
+      let signedIn = false;
+
+      const loginOverlay = document.getElementById("loginOverlay");
+      const loginEmail = document.getElementById("loginEmail");
+      const loginPass = document.getElementById("loginPass");
+      const loginError = document.getElementById("loginError");
+      const loginSubmit = document.getElementById("loginSubmit");
+      const loginCancel = document.getElementById("loginCancel");
+      const sessionPill = document.getElementById("sessionPill");
+      const logoutLink = document.getElementById("logoutLink");
+
+      function openLogin() {
+        loginError.classList.remove("show");
+        loginEmail.value = "";
+        loginPass.value = "";
+        loginOverlay.classList.add("show");
+        setTimeout(() => loginEmail.focus(), 30);
+      }
+      function closeLogin() {
+        loginOverlay.classList.remove("show");
+      }
+
+      async function attemptLogin() {
+        const emailHash = await sha256(loginEmail.value.trim().toLowerCase());
+        const passHash = await sha256(loginPass.value);
+        if (emailHash === AUTH_EMAIL_HASH && passHash === AUTH_PASS_HASH) {
+          signedIn = true;
+          sessionStorage.setItem("pyq-signed-in", "1");
+          closeLogin();
+          sessionPill.classList.add("show");
+          enableEditModeUI();
+        } else {
+          loginError.classList.add("show");
+        }
+      }
+
+      loginSubmit.addEventListener("click", attemptLogin);
+      loginCancel.addEventListener("click", closeLogin);
+      [loginEmail, loginPass].forEach((inp) => {
+        inp.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") attemptLogin();
+        });
+      });
+      logoutLink.addEventListener("click", () => {
+        signedIn = false;
+        sessionStorage.removeItem("pyq-signed-in");
+        sessionPill.classList.remove("show");
+        if (editMode) {
+          toggleEditModeOff();
+        }
+      });
+
+      loginOverlay.addEventListener("click", (e) => {
+        if (e.target === loginOverlay) closeLogin();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && loginOverlay.classList.contains("show"))
+          closeLogin();
+      });
+
+      // ===== EDIT MODE =====
+      const editBtn = document.getElementById("editToggle");
+
+      function enableEditModeUI() {
+        editMode = true;
+        document.body.classList.add("editing");
+        editBtn.classList.add("active");
+        editBtn.textContent = "done editing";
+        render();
+      }
+      function toggleEditModeOff() {
+        editMode = false;
+        document.body.classList.remove("editing");
+        editBtn.classList.remove("active");
+        editBtn.textContent = "enable edit mode";
+        render();
+      }
+
+      editBtn.addEventListener("click", () => {
+        if (editMode) {
+          toggleEditModeOff();
+          return;
+        }
+        if (signedIn) {
+          enableEditModeUI();
+        } else {
+          openLogin();
+        }
+      });
+
+      // restore session within this tab
+      if (sessionStorage.getItem("pyq-signed-in") === "1") {
+        signedIn = true;
+        sessionPill.classList.add("show");
+      }
+
+      // ===== SEARCH / FILTER =====
+      const searchBox = document.getElementById("searchBox");
+      const semFilter = document.getElementById("semFilter");
+      const noResults = document.getElementById("noResults");
+
+      function applyFilters() {
+        const q = searchBox.value.trim().toLowerCase();
+        const semVal = semFilter.value;
+        let anyVisible = false;
+
+        document.querySelectorAll(".year-block").forEach((block) => {
+          const year = block.dataset.year;
+          let blockHasMatch = false;
+
+          block.querySelectorAll(".sem").forEach((sem) => {
+            const semNum = sem.dataset.sem;
+            const semMatches = semVal === "all" || semVal === semNum;
+            let semHasMatch = false;
+
+            sem.querySelectorAll(".paper-row").forEach((row) => {
+              const name = row
+                .querySelector('input[data-field="name"]')
+                .value.toLowerCase();
+              const textMatch = !q || name.includes(q) || year.includes(q);
+              const show = semMatches && textMatch;
+              row.style.display = show ? "" : "none";
+              if (show) semHasMatch = true;
+            });
+
+            sem.style.display = semMatches && (semHasMatch || !q) ? "" : "none";
+            if (semMatches && semHasMatch) blockHasMatch = true;
+          });
+
+          const showBlock = (!q && semVal === "all") || blockHasMatch;
+          block.style.display = showBlock ? "" : "none";
+          if (showBlock) {
+            anyVisible = true;
+            if (q || semVal !== "all") block.classList.add("open");
+          }
+        });
+
+        noResults.style.display = anyVisible ? "none" : "block";
+      }
+
+      searchBox.addEventListener("input", applyFilters);
+      semFilter.addEventListener("change", applyFilters);
+
+      // ===== ADD YEAR =====
+      const newYearInput = document.getElementById("newYearInput");
+      const addYearBtn = document.getElementById("addYearBtn");
+      const addYearMsg = document.getElementById("addYearMsg");
+
+      addYearBtn.addEventListener("click", () => {
+        const raw = newYearInput.value.trim();
+        const year = parseInt(raw, 10);
+        addYearMsg.classList.remove("error", "success");
+
+        if (!raw || !Number.isInteger(year) || String(year).length !== 4) {
+          addYearMsg.textContent = "enter a 4-digit year";
+          addYearMsg.classList.add("error");
+          return;
+        }
+        const ok = addYear(year);
+        if (!ok) {
+          addYearMsg.textContent = `${year} already exists`;
+          addYearMsg.classList.add("error");
+          return;
+        }
+        addYearMsg.textContent = `${year} added`;
+        addYearMsg.classList.add("success");
+        newYearInput.value = "";
+        render();
+        // open the newly added year for convenience
+        const block = document.querySelector(
+          `.year-block[data-year="${year}"]`,
+        );
+        if (block) block.classList.add("open");
+      });
+
+      newYearInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") addYearBtn.click();
+      });
+
+      // ===== DATE STAMP =====
+      function setDateStamp() {
+        const el = document.getElementById("todayDate");
+        const d = new Date();
+        const months = [
+          "JAN",
+          "FEB",
+          "MAR",
+          "APR",
+          "MAY",
+          "JUN",
+          "JUL",
+          "AUG",
+          "SEP",
+          "OCT",
+          "NOV",
+          "DEC",
+        ];
+        el.textContent = `UPDATED TILL ${String(d.getDate()).padStart(2, "0")}-${months[d.getMonth()]}-${d.getFullYear()}`;
+      }
+
+      // ===== INIT =====
+      (async function init() {
+        setDateStamp();
+        await loadState();
+        render();
+      })();
+    </script>
+  </body>
+</html>
