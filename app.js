@@ -378,22 +378,26 @@
             li.dataset.status = rowStatus; // activates custom glow hover effect
 
             li.innerHTML = `
-              <span class="paper-code">${escapeHtml(paper.code || "PAPER")}</span>
-              <div class="paper-info">
-                <div class="paper-title">${escapeHtml(paper.name || "Untitled Paper")}</div>
+              <div class="paper-main-content">
+                <span class="paper-code">${escapeHtml(paper.code || "PAPER")}</span>
+                <div class="paper-info">
+                  <div class="paper-title">${escapeHtml(paper.name || "Untitled Paper")}</div>
+                </div>
               </div>
-              <div class="paper-status-indicator ${statusClass}">
-                ${statusLabel}
-              </div>
-              <div class="paper-actions-group">
-                ${
-                  isUnavailable
-                    ? `<span class="action-btn action-btn-disabled btn-unavail-text" title="Exam not held or paper unavailable">Unavailable</span>`
-                    : hasLink && safeUrl
-                    ? `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer" class="action-btn action-btn-view" title="Open question paper">View PDF &#8599;</a>
-                       <button class="action-btn action-btn-copy btn-copy-link" data-url="${escapeHtml(safeUrl)}" title="Copy paper link">&#128203;</button>`
-                    : `<span class="action-btn action-btn-disabled">Pending</span>`
-                }
+              <div class="paper-meta-content">
+                <div class="paper-status-indicator ${statusClass}">
+                  ${statusLabel}
+                </div>
+                <div class="paper-actions-group">
+                  ${
+                    isUnavailable
+                      ? `<span class="action-btn action-btn-disabled btn-unavail-text" title="Exam not held or paper unavailable">Unavailable</span>`
+                      : hasLink && safeUrl
+                      ? `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer" class="action-btn action-btn-view" title="Open question paper">View PDF &#8599;</a>
+                         <button class="action-btn action-btn-copy btn-copy-link" data-url="${escapeHtml(safeUrl)}" title="Copy paper link">&#128203;</button>`
+                      : `<span class="action-btn action-btn-disabled">Pending</span>`
+                  }
+                </div>
               </div>
               <div class="edit-fields-wrap">
                 <input type="text" class="input-edit input-edit-code edit-paper-field" data-id="${paper.id}" data-field="code" value="${escapeHtml(paper.code || "")}" placeholder="Code" title="Paper Code" />
