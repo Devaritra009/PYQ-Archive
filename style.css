@@ -1,0 +1,1455 @@
+/* ==========================================================================
+   CS PYQ ARCHIVE — SAMMILANI MAHAVIDYALYA (CALCUTTA UNIVERSITY)
+   Stylesheet: style.css (High Performance & Mobile-Optimized)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. CSS VARIABLES & THEME TOKENS
+   -------------------------------------------------------------------------- */
+:root {
+  /* Color Palette */
+  --bg-dark: #070d17;
+  --bg-surface: #0c1626;
+  --bg-card: #101e33;
+  --bg-card-hover: #152742;
+  --bg-elevated: #162a45;
+  --border-subtle: rgba(72, 110, 153, 0.2);
+  --border-focus: #14b8a6;
+  --border-strong: rgba(72, 110, 153, 0.4);
+
+  /* Typography Colors */
+  --text-main: #f0f6fc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+
+  /* Accent & Status Colors */
+  --cyan: #06b6d4;
+  --teal: #14b8a6;
+  --teal-glow: rgba(20, 184, 166, 0.18);
+  --emerald: #10b981;
+  --emerald-soft: rgba(16, 185, 129, 0.12);
+  --amber: #f59e0b;
+  --amber-soft: rgba(245, 158, 11, 0.12);
+  --rose: #f43f5e;
+  --rose-soft: rgba(244, 63, 94, 0.12);
+  --purple: #a855f7;
+
+  /* Glow Effects */
+  --glow-emerald: 0 0 14px rgba(16, 185, 129, 0.35);
+  --glow-amber: 0 0 14px rgba(245, 158, 11, 0.35);
+  --glow-rose: 0 0 14px rgba(244, 63, 94, 0.35);
+  --glow-teal: 0 0 18px rgba(20, 184, 166, 0.3);
+
+  /* Radii & Shadows */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 20px rgba(20, 184, 166, 0.2);
+
+  /* Transitions */
+  --transition-fast: 0.16s ease;
+  --transition-normal: 0.24s ease;
+}
+
+/* --------------------------------------------------------------------------
+   2. GLOBAL RESET & BASE STYLES (HARDWARE-ACCELERATED MOBILE SMOOTHNESS)
+   -------------------------------------------------------------------------- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Mobile-Friendly Fast Touch */
+button, a, input, select, .year-head, .sem-chip, .year-nav-pill {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  position: relative;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* GPU-Composited Fixed Background Layer: Eliminates scroll stutter on mobile Adreno/Mali GPUs */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: 
+    radial-gradient(ellipse 900px 500px at 15% -5%, rgba(6, 182, 212, 0.08), transparent 60%),
+    radial-gradient(ellipse 800px 600px at 85% 15%, rgba(20, 184, 166, 0.06), transparent 55%),
+    radial-gradient(circle 600px at 50% 100%, rgba(16, 185, 129, 0.04), transparent 50%);
+  z-index: -1;
+  pointer-events: none;
+  transform: translateZ(0);
+}
+
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 20px 80px;
+  position: relative;
+}
+
+a {
+  color: var(--cyan);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+a:hover {
+  color: #67e8f9;
+}
+
+/* --------------------------------------------------------------------------
+   3. HEADER, CREST & TOP BAR
+   -------------------------------------------------------------------------- */
+header.header {
+  padding: 22px 0 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 24px;
+}
+
+/* Top Meta Bar */
+.meta-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+
+.meta-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.meta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  color: var(--text-muted);
+}
+.meta-badge .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 8px var(--teal);
+}
+
+.meta-ref {
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.meta-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Header Branding Row */
+.branding-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* Pure, Clean, Transparent Emblem Wrapper */
+.crest-wrapper {
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crest-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 8px rgba(6, 182, 212, 0.2));
+  transition: transform var(--transition-normal);
+}
+
+.branding-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.college-tagline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.college-tagline .sep {
+  color: var(--text-dim);
+}
+
+h1.page-title {
+  font-size: clamp(22px, 4vw, 32px);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+  font-family: 'Outfit', sans-serif;
+}
+
+.course-subtitle {
+  font-family: 'Newsreader', Georgia, serif;
+  font-style: italic;
+  font-size: 16px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.dept-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+}
+.dept-badge strong {
+  color: var(--teal);
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   4. STATS DASHBOARD BAR
+   -------------------------------------------------------------------------- */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition-fast);
+}
+.stat-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--accent-color, var(--border-subtle));
+}
+.stat-card.c-total { --accent-color: var(--cyan); }
+.stat-card.c-avail { --accent-color: var(--emerald); }
+.stat-card.c-pend { --accent-color: var(--amber); }
+.stat-card.c-unavail { --accent-color: var(--rose); }
+.stat-card.c-cov { --accent-color: var(--purple); }
+
+.stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-main);
+}
+
+/* --------------------------------------------------------------------------
+   5. NOTICE BOX
+   -------------------------------------------------------------------------- */
+.notice-box {
+  background: rgba(12, 22, 38, 0.85);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--cyan);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.notice-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  background: rgba(6, 182, 212, 0.15);
+  color: var(--cyan);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  flex-shrink: 0;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+.notice-content {
+  line-height: 1.5;
+}
+.notice-content em {
+  color: var(--amber);
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* --------------------------------------------------------------------------
+   6. CONTROLS PANEL & FILTERS
+   -------------------------------------------------------------------------- */
+.controls-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.controls-main-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.search-wrap {
+  flex: 1;
+  min-width: 220px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-dim);
+  font-size: 13px;
+  pointer-events: none;
+}
+.search-input {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 12px 10px 34px;
+  color: var(--text-main);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+.search-input:focus {
+  border-color: var(--teal);
+}
+.search-input::placeholder {
+  color: var(--text-dim);
+}
+
+.filter-select {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  color: var(--text-main);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+.filter-select:focus {
+  border-color: var(--teal);
+}
+
+/* Button System */
+.btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 9px 14px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid transparent;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+  user-select: none;
+  white-space: nowrap;
+}
+
+.btn-teal {
+  background: var(--teal);
+  color: #031518;
+}
+.btn-teal:hover {
+  background: #2dd4bf;
+}
+
+.btn-outline-teal {
+  background: transparent;
+  border-color: var(--teal);
+  color: var(--teal);
+}
+.btn-outline-teal:hover {
+  background: rgba(20, 184, 166, 0.12);
+}
+.btn-outline-teal.active {
+  background: var(--teal);
+  color: #031518;
+}
+
+.btn-subtle {
+  background: var(--bg-card);
+  border-color: var(--border-subtle);
+  color: var(--text-muted);
+}
+.btn-subtle:hover {
+  border-color: var(--text-dim);
+  color: var(--text-main);
+}
+
+.btn-danger {
+  background: rgba(244, 63, 94, 0.12);
+  border-color: rgba(244, 63, 94, 0.35);
+  color: #fda4af;
+}
+.btn-danger:hover {
+  background: rgba(244, 63, 94, 0.25);
+}
+
+/* Filter Chips & View Toggles with Smooth Momentum Scroll */
+.chips-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border-subtle);
+  -webkit-overflow-scrolling: touch;
+}
+.chip-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+  margin-right: 4px;
+}
+.sem-chip {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  padding: 5px 11px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.sem-chip:hover {
+  border-color: var(--teal);
+  color: var(--text-main);
+}
+.sem-chip.active {
+  background: rgba(20, 184, 166, 0.16);
+  border-color: var(--teal);
+  color: var(--teal);
+  font-weight: 600;
+}
+
+.view-toggles {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* --------------------------------------------------------------------------
+   7. ADMIN TOOLBAR & CONTROLS
+   -------------------------------------------------------------------------- */
+.admin-bar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: rgba(20, 184, 166, 0.08);
+  border: 1px solid rgba(20, 184, 166, 0.3);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+}
+.admin-bar.show {
+  display: flex;
+}
+.admin-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--teal);
+  font-weight: 600;
+}
+.admin-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.edit-add-year-panel {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(6, 182, 212, 0.06);
+  border: 1px dashed rgba(6, 182, 212, 0.35);
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+}
+body.is-editing .edit-add-year-panel {
+  display: flex;
+}
+
+/* --------------------------------------------------------------------------
+   8. REDESIGNED YEAR NAVIGATION & SECTION
+   -------------------------------------------------------------------------- */
+.year-nav-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 18px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.year-nav-bar::-webkit-scrollbar {
+  display: none;
+}
+.year-nav-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  padding: 6px 13px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+.year-nav-pill:hover {
+  border-color: var(--teal);
+  color: var(--text-main);
+}
+.year-nav-pill.active {
+  background: rgba(6, 182, 212, 0.16);
+  border-color: var(--cyan);
+  color: var(--cyan);
+  font-weight: 600;
+}
+
+.years-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.year-block {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition-fast);
+}
+.year-block:hover {
+  border-color: var(--border-strong);
+}
+.year-block.open {
+  border-color: rgba(20, 184, 166, 0.4);
+}
+
+.year-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: var(--bg-card);
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid transparent;
+  transition: background var(--transition-fast);
+  gap: 14px;
+}
+.year-block.open .year-head {
+  border-bottom-color: var(--border-subtle);
+}
+.year-head:hover {
+  background: var(--bg-card-hover);
+}
+
+.year-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.year-badge {
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--text-main);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -0.02em;
+}
+.year-status-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(72, 110, 153, 0.2);
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+.year-status-chip.current {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: var(--emerald);
+}
+
+.year-progress-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+.year-progress-track {
+  width: 70px;
+  height: 6px;
+  background: rgba(72, 110, 153, 0.25);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+.year-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal), var(--cyan));
+  border-radius: var(--radius-full);
+}
+
+.year-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.year-chevron {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  transition: transform var(--transition-fast);
+}
+.year-block.open .year-chevron {
+  transform: rotate(180deg);
+  color: var(--teal);
+}
+
+.year-body {
+  display: none;
+  padding: 18px;
+  background: var(--bg-surface);
+  flex-direction: column;
+  gap: 16px;
+}
+.year-block.open .year-body {
+  display: flex;
+}
+
+/* --------------------------------------------------------------------------
+   9. SEMESTER CARDS & QUESTION PAPERS WITH LUMINOUS GLOW EFFECTS
+   -------------------------------------------------------------------------- */
+.sem-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.sem-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(12, 22, 38, 0.6);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.sem-title-box {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.sem-roman-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #031518;
+  background: var(--teal);
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+}
+
+.sem-name {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--text-main);
+}
+
+.paper-list {
+  list-style: none;
+  padding: 4px 0;
+}
+
+.paper-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(72, 110, 153, 0.1);
+  border-left: 2px solid transparent;
+  transition: background var(--transition-fast), border-left-color var(--transition-fast);
+}
+.paper-item:last-child {
+  border-bottom: none;
+}
+.paper-item:hover {
+  background: rgba(6, 182, 212, 0.04);
+}
+
+/* Dynamic Indicator Border */
+.paper-item[data-status="available"]:hover {
+  border-left-color: var(--emerald);
+}
+.paper-item[data-status="pending"]:hover {
+  border-left-color: var(--amber);
+}
+.paper-item[data-status="unavailable"]:hover {
+  border-left-color: var(--rose);
+}
+
+.paper-item.is-unavailable {
+  opacity: 0.65;
+}
+.paper-item.is-unavailable .paper-title {
+  color: var(--text-dim);
+}
+
+.paper-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cyan);
+  background: rgba(6, 182, 212, 0.08);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 2px 7px;
+  white-space: nowrap;
+  min-width: 60px;
+  text-align: center;
+}
+
+.paper-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.paper-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Glowing Status Indicators */
+.paper-status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+/* Green Glow for Available Papers */
+.paper-status-indicator.available {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  box-shadow: var(--glow-emerald);
+}
+
+/* Yellow Glow for Pending Papers */
+.paper-status-indicator.pending {
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  box-shadow: var(--glow-amber);
+}
+
+/* Red Glow for Unavailable Papers */
+.paper-status-indicator.unavailable {
+  color: #fda4af;
+  background: rgba(244, 63, 94, 0.14);
+  border: 1px solid rgba(244, 63, 94, 0.4);
+  box-shadow: var(--glow-rose);
+}
+
+.paper-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: background var(--transition-fast);
+  text-decoration: none;
+}
+
+.action-btn-view {
+  background: rgba(20, 184, 166, 0.15);
+  border-color: rgba(20, 184, 166, 0.35);
+  color: var(--teal);
+}
+.action-btn-view:hover {
+  background: var(--teal);
+  color: #031518;
+}
+
+.action-btn-copy {
+  background: transparent;
+  border-color: var(--border-subtle);
+  color: var(--text-dim);
+}
+.action-btn-copy:hover {
+  border-color: var(--text-muted);
+  color: var(--text-main);
+}
+
+.action-btn-disabled {
+  background: rgba(72, 110, 153, 0.1);
+  border-color: transparent;
+  color: var(--text-dim);
+  cursor: not-allowed;
+}
+.action-btn-disabled.btn-unavail-text {
+  color: #fda4af;
+  background: rgba(244, 63, 94, 0.08);
+}
+
+/* Edit Mode Inline Controls */
+.edit-fields-wrap {
+  display: none;
+  flex: 1;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+body.is-editing .edit-fields-wrap {
+  display: flex;
+}
+body.is-editing .paper-info,
+body.is-editing .paper-actions-group,
+body.is-editing .paper-status-indicator {
+  display: none;
+}
+
+.input-edit {
+  background: var(--bg-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  color: var(--text-main);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  outline: none;
+}
+.input-edit:focus {
+  border-color: var(--teal);
+}
+.input-edit-code {
+  width: 75px;
+}
+.input-edit-name {
+  flex: 1;
+  min-width: 140px;
+}
+.input-edit-link {
+  width: 170px;
+}
+.input-edit-status {
+  width: 120px;
+  cursor: pointer;
+}
+
+.btn-icon-del {
+  display: none;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background: rgba(244, 63, 94, 0.1);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  color: #fda4af;
+  cursor: pointer;
+  font-size: 14px;
+}
+body.is-editing .btn-icon-del {
+  display: inline-flex;
+}
+.btn-icon-del:hover {
+  background: rgba(244, 63, 94, 0.25);
+}
+
+/* --------------------------------------------------------------------------
+   10. EMPTY / NO RESULTS
+   -------------------------------------------------------------------------- */
+.no-results-box {
+  display: none;
+  padding: 40px 20px;
+  text-align: center;
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-lg);
+  margin: 20px 0;
+}
+.no-results-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+  color: var(--text-dim);
+}
+.no-results-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.no-results-desc {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+/* --------------------------------------------------------------------------
+   11. FOOTER & CREATOR SECTION
+   -------------------------------------------------------------------------- */
+footer.footer {
+  margin-top: 50px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-subtle);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-dim);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.footer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-credit strong {
+  color: var(--teal);
+}
+
+.footer-creator {
+  font-size: 12.5px;
+  padding: 10px 14px;
+  background: rgba(12, 22, 38, 0.65);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--cyan);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+}
+.footer-creator strong {
+  color: var(--cyan);
+  font-weight: 700;
+}
+.footer-creator .batch-badge {
+  display: inline-block;
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  padding: 1px 7px;
+  border-radius: var(--radius-sm);
+  color: var(--cyan);
+  margin-left: 6px;
+  font-size: 11px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.footer-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.footer-disclaimer {
+  font-size: 11px;
+  line-height: 1.5;
+  color: #475569;
+}
+
+/* --------------------------------------------------------------------------
+   12. MODALS & POPUPS (OPTIMIZED FOR MOBILE KEYBOARDS)
+   -------------------------------------------------------------------------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 7, 13, 0.88);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+  animation: fadeIn 0.18s ease;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.modal-overlay.open {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-top: 3px solid var(--teal);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Admin Welcome Celebration Modal */
+.welcome-card {
+  max-width: 420px;
+  text-align: center;
+  background: radial-gradient(circle at 50% 0%, rgba(20, 184, 166, 0.15), var(--bg-surface) 70%);
+  border: 1px solid rgba(20, 184, 166, 0.4);
+  border-top: 3px solid var(--teal);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(20, 184, 166, 0.2);
+}
+
+.welcome-badge-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: rgba(20, 184, 166, 0.16);
+  border: 2px solid var(--teal);
+  box-shadow: var(--glow-teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+
+.welcome-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 8px;
+}
+.welcome-subtitle {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+
+.welcome-details {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 22px;
+}
+.welcome-stat-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  color: var(--teal);
+}
+
+.welcome-enter-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 13px;
+  justify-content: center;
+}
+
+.modal-header {
+  margin-bottom: 18px;
+}
+.modal-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--teal);
+  margin-bottom: 4px;
+}
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.modal-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+.form-label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.form-input {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 11px 12px;
+  color: var(--text-main);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+.form-input:focus {
+  border-color: var(--teal);
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.form-message {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  margin-top: 10px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  display: none;
+}
+.form-message.error {
+  display: block;
+  background: var(--rose-soft);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  color: #fda4af;
+}
+.form-message.success {
+  display: block;
+  background: var(--emerald-soft);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: var(--emerald);
+}
+
+.json-textarea {
+  width: 100%;
+  height: 180px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  color: var(--teal);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  resize: vertical;
+  outline: none;
+}
+
+/* --------------------------------------------------------------------------
+   13. TOAST NOTIFICATIONS
+   -------------------------------------------------------------------------- */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+  max-width: calc(100vw - 40px);
+}
+.toast {
+  pointer-events: auto;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-left: 3px solid var(--teal);
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-main);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: slideIn 0.25s ease;
+  min-width: 220px;
+}
+.toast.toast-error { border-left-color: var(--rose); }
+.toast.toast-success { border-left-color: var(--emerald); }
+
+@keyframes slideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* --------------------------------------------------------------------------
+   14. COMPREHENSIVE RESPONSIVE MOBILE MEDIA QUERIES (ANDROID / IPHONE)
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 14px 60px;
+  }
+  .branding-row {
+    gap: 16px;
+  }
+  .crest-wrapper {
+    width: 80px;
+    height: 80px;
+  }
+  .stats-bar {
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 8px;
+  }
+  .stat-card {
+    padding: 8px 10px;
+  }
+  .stat-value {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 640px) {
+  .meta-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .meta-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .controls-main-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .search-wrap {
+    width: 100%;
+  }
+  .filter-select {
+    width: 100%;
+  }
+  .chips-row {
+    gap: 5px;
+  }
+  .view-toggles {
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 4px;
+  }
+  .paper-item {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .paper-info {
+    width: 100%;
+    order: 1;
+  }
+  .paper-code {
+    order: 0;
+  }
+  .paper-status-indicator {
+    order: 2;
+  }
+  .paper-actions-group {
+    order: 3;
+    margin-left: auto;
+  }
+  .edit-fields-wrap {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  .input-edit-code, .input-edit-link, .input-edit-status {
+    width: 100%;
+  }
+  .btn-icon-del {
+    align-self: flex-end;
+  }
+  .toast-container {
+    bottom: 16px;
+    right: 16px;
+    left: 16px;
+  }
+  .toast {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .branding-row {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+  .college-tagline {
+    justify-content: center;
+  }
+  .dept-badge {
+    text-align: center;
+  }
+  .crest-wrapper {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto;
+  }
+  .stats-bar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .stats-bar .stat-card:last-child {
+    grid-column: span 2;
+  }
+  .year-head {
+    padding: 12px 14px;
+  }
+  .year-badge {
+    font-size: 19px;
+  }
+  .year-progress-box {
+    display: none; /* Hide progress bar on tiny screens to avoid wrapping clutter */
+  }
+}
