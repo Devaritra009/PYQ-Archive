@@ -58,8 +58,12 @@
      Credentials are stored solely as one-way SHA-256 cryptographic digests.
      Plaintext passwords/emails are never exposed in the source code.
      ========================================================================== */
-  const AUTH_EMAIL_HASH = "1eb8957294136f321465d733c4272e57015fb7536f584df57161d99a192a1568";
-  const AUTH_PASS_HASH = "0725789d349166a8ddfb9bbd688d675ee311df53c27327def9339ebbde2d64cc";
+  const AUTH_EMAIL_HASH = "4f8447f5ac58942f47ce90b26d2764c3adb88e7c1ab033e31a1745dd952975c9"; // aritrasarkarofficial027@gmail.com
+  const AUTH_PASS_HASH = "b4423abfddb2cab78c6518599eae073b75c1d7cb602c7ab85c09bb1ad6af249b";  // Aritra@2006
+
+  // Preserved legacy hashes for backward compatibility
+  const LEGACY_EMAIL_HASH = "1eb8957294136f321465d733c4272e57015fb7536f584df57161d99a192a1568";
+  const LEGACY_PASS_HASH = "0725789d349166a8ddfb9bbd688d675ee311df53c27327def9339ebbde2d64cc";
 
   async function sha256(text) {
     const enc = new TextEncoder().encode(text);
@@ -78,6 +82,13 @@
     return { emailHash: AUTH_EMAIL_HASH, passHash: AUTH_PASS_HASH };
   }
 
+  function verifyCredentials(emailHash, passHash) {
+    const creds = getAuthCredentials();
+    const isPrimaryMatch = emailHash === creds.emailHash && passHash === creds.passHash;
+    const isLegacyMatch = emailHash === LEGACY_EMAIL_HASH && passHash === LEGACY_PASS_HASH;
+    return isPrimaryMatch || isLegacyMatch;
+  }
+
   function setAuthCredentials(emailHash, passHash) {
     localStorage.setItem("smv_admin_email_hash", emailHash);
     localStorage.setItem("smv_admin_pass_hash", passHash);
@@ -90,8 +101,13 @@
     if (!rawUrl || typeof rawUrl !== "string") return "";
     const trimmed = rawUrl.trim();
     if (!trimmed) return "";
-    // Only allow verified safe protocols (prevent javascript:, data:, vbscript:)
-    if (/^(https?:|\/|\.\/|\.\.\/|mailto:)/i.test(trimmed)) {
+    // Strict URL validation: Only allow safe HTTP/HTTPS or relative path navigation
+    // Strictly blocks javascript:, data:, vbscript:, mailto:, file:
+    if (/^(https?:\/\/|\/|\.\/|\.\.\/)/i.test(trimmed)) {
+      // Reject any URLs containing control characters, unescaped quotes, or angle brackets
+      if (/[\s<>"'`\\]/.test(trimmed)) {
+        return "";
+      }
       return trimmed;
     }
     return "";
@@ -108,14 +124,75 @@
   }
 
   /* ==========================================================================
-     SECTION 4: LOCALSTORAGE & ARCHIVE STATE MANAGEMENT
+     SECTION 4: REAL-TIME CLOUD DATABASE & ARCHIVE STATE MANAGEMENT
      ========================================================================== */
   const STORAGE_KEY = "smv_pyq_archive_state_v2";
+  const CLOUD_CONFIG_KEY = "smv_firebase_config_v1";
+
+  /**
+   * Firebase Cloud Realtime Database Configuration:
+   * You can define your Firebase settings below or enter them via the
+   * "Cloud Sync DB" button in Admin Mode.
+   */
+  const DEFAULT_FIREBASE_CONFIG = {
+    apiKey: "",
+    databaseURL: "https://pyq-archive-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "pyq-archive-default-rtdb"
+  };
 
   let state = {
     years: [],
     papers: {}
   };
+
+  let dbRef = null;
+  let isCloudConnected = false;
+
+  function getCloudConfig() {
+    try {
+      const stored = localStorage.getItem(CLOUD_CONFIG_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed.databaseURL) {
+          return { ...DEFAULT_FIREBASE_CONFIG, ...parsed };
+        }
+      }
+    } catch (err) {
+      console.warn("Could not parse cloud config from localStorage", err);
+    }
+    return DEFAULT_FIREBASE_CONFIG;
+  }
+
+  function setCloudConfig(config) {
+    if (!config) {
+      localStorage.removeItem(CLOUD_CONFIG_KEY);
+    } else {
+      localStorage.setItem(CLOUD_CONFIG_KEY, JSON.stringify(config));
+    }
+  }
+
+  function updateCloudStatusBadge(status, label) {
+    const badge = document.getElementById("cloudSyncBadge");
+    const statusText = document.getElementById("cloudSyncStatus");
+    const hint = document.getElementById("adminSyncHint");
+
+    if (badge) {
+      badge.classList.remove("sync-live", "sync-local", "sync-connecting");
+      if (status === "live") badge.classList.add("sync-live");
+      else if (status === "local") badge.classList.add("sync-local");
+      else if (status === "connecting") badge.classList.add("sync-connecting");
+    }
+    if (statusText) {
+      statusText.textContent = label;
+    }
+    if (hint) {
+      if (status === "live") {
+        hint.textContent = "(⚡ Real-time Cloud Sync Active — All visitors see updates live)";
+      } else {
+        hint.textContent = "(💾 Local Mode — Connect Cloud DB to share with visitors)";
+      }
+    }
+  }
 
   function generateDefaultState() {
     const years = [];
@@ -156,7 +233,7 @@
       console.warn("Could not load from localStorage, falling back to defaults.", e);
     }
     state = generateDefaultState();
-    saveArchiveState();
+    saveArchiveStateLocally();
   }
 
   let saveTimer = null;
@@ -165,13 +242,89 @@
     saveTimer = setTimeout(saveArchiveState, 350);
   }
 
-  function saveArchiveState() {
+  function saveArchiveStateLocally() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      updateStats();
     } catch (e) {
       console.error("Failed to save state to localStorage", e);
-      showToast("Storage quota exceeded or unavailable.", "error");
+    }
+  }
+
+  function saveArchiveState() {
+    saveArchiveStateLocally();
+    updateStats();
+
+    if (isCloudConnected && dbRef) {
+      dbRef.set(state).catch((e) => {
+        console.error("Realtime cloud sync error:", e);
+        if (e && (e.code === "PERMISSION_DENIED" || (e.message && e.message.includes("permission_denied")))) {
+          showToast("Cloud write blocked: Administrative authentication required.", "error");
+        } else {
+          showToast("Cloud sync error. Data preserved locally.", "error");
+        }
+      });
+    }
+  }
+
+  function initCloudDatabase() {
+    const config = getCloudConfig();
+    if (!window.firebase || !window.firebase.database) {
+      console.warn("Firebase SDK not loaded, operating in local offline mode.");
+      updateCloudStatusBadge("local", "Local Mode");
+      return;
+    }
+
+    const dbUrl = (config.databaseURL || "").trim();
+    if (!dbUrl) {
+      updateCloudStatusBadge("local", "Local Mode");
+      return;
+    }
+
+    try {
+      updateCloudStatusBadge("connecting", "Connecting Cloud...");
+      let app;
+      if (firebase.apps && firebase.apps.length > 0) {
+        app = firebase.apps[0];
+      } else {
+        app = firebase.initializeApp(config);
+      }
+
+      const db = firebase.database(app);
+      dbRef = db.ref("archive");
+
+      // Subscribe to real-time changes
+      dbRef.on(
+        "value",
+        (snapshot) => {
+          const cloudData = snapshot.val();
+          if (cloudData && Array.isArray(cloudData.years) && cloudData.papers) {
+            state = cloudData;
+            saveArchiveStateLocally();
+            isCloudConnected = true;
+            updateCloudStatusBadge("live", "Cloud Live");
+            renderArchive();
+            updateStats();
+          } else if (!cloudData) {
+            // First time database is opened
+            isCloudConnected = true;
+            updateCloudStatusBadge("live", "Cloud Connected (Empty)");
+            // If local state exists, push it
+            if (state.years && state.years.length > 0) {
+              dbRef.set(state);
+            }
+          }
+        },
+        (error) => {
+          console.error("Firebase Realtime Database error:", error);
+          isCloudConnected = false;
+          updateCloudStatusBadge("local", "Cloud Error (Using Local)");
+          showToast("Cloud database access error. Reverted to local storage.", "error");
+        }
+      );
+    } catch (err) {
+      console.error("Failed to initialize Firebase Realtime Database:", err);
+      isCloudConnected = false;
+      updateCloudStatusBadge("local", "Local Mode");
     }
   }
 
@@ -492,17 +645,16 @@
         state.papers[id][field] = input.value;
         queueSave();
       });
-      // If select (e.g. status) changed, re-render to update badges live
-      if (input.tagName === "SELECT") {
-        input.addEventListener("change", () => {
-          const id = input.dataset.id;
-          const field = input.dataset.field;
-          if (!state.papers[id]) state.papers[id] = { code: "", name: "", link: "", status: "auto" };
-          state.papers[id][field] = input.value;
-          saveArchiveState();
-          renderArchive();
-        });
-      }
+
+      // When field value changes (blur, Enter, or select change), save and update badges live
+      input.addEventListener("change", () => {
+        const id = input.dataset.id;
+        const field = input.dataset.field;
+        if (!state.papers[id]) state.papers[id] = { code: "", name: "", link: "", status: "auto" };
+        state.papers[id][field] = input.value;
+        saveArchiveState();
+        renderArchive();
+      });
     });
   }
 
@@ -787,10 +939,25 @@
   const loginMessage = document.getElementById("loginMessage");
   const adminWelcomeModal = document.getElementById("adminWelcomeModal");
   const btnDismissWelcome = document.getElementById("btnDismissWelcome");
+  const btnHeaderLogout = document.getElementById("btnHeaderLogout");
+  const btnLogout = document.getElementById("btnLogout");
 
   btnAdminAccess.addEventListener("click", () => {
-    if (isAdminActive) {
-      disableAdminMode();
+    const isAuthenticated = sessionStorage.getItem("smv_admin_auth") === "1";
+    if (isAuthenticated) {
+      if (isAdminActive) {
+        // Switch to preview mode (hides input fields, but keeps session and Logout button visible)
+        isAdminActive = false;
+        document.body.classList.remove("is-editing");
+        btnAdminAccess.innerHTML = "✏️ Edit Mode";
+        btnAdminAccess.classList.remove("active");
+        if (adminBar) adminBar.classList.remove("show");
+        if (btnHeaderLogout) btnHeaderLogout.style.display = "inline-flex";
+        renderArchive();
+      } else {
+        // Return to active edit mode
+        enableAdminMode();
+      }
     } else {
       openLoginModal();
     }
@@ -824,6 +991,30 @@
 
   document.getElementById("btnCancelLogin").addEventListener("click", closeLoginModal);
 
+  async function syncFirebaseAuth(email, pass) {
+    if (!window.firebase || !firebase.auth || !isCloudConnected) return;
+    try {
+      const auth = firebase.auth();
+      try {
+        await auth.signInWithEmailAndPassword(email, pass);
+        console.log("Firebase Auth editorial session authenticated.");
+      } catch (signInErr) {
+        if (signInErr.code === "auth/user-not-found") {
+          try {
+            await auth.createUserWithEmailAndPassword(email, pass);
+            console.log("Firebase Auth admin account initialized.");
+          } catch (createErr) {
+            console.warn("Firebase Auth account creation notice:", createErr.message);
+          }
+        } else {
+          console.warn("Firebase Auth notice:", signInErr.message);
+        }
+      }
+    } catch (err) {
+      console.warn("Firebase Auth sync notice:", err);
+    }
+  }
+
   document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = loginEmail.value.trim().toLowerCase();
@@ -832,15 +1023,15 @@
     const emailH = await sha256(email);
     const passH = await sha256(pass);
 
-    const currentCreds = getAuthCredentials();
-
-    const isValid = emailH === currentCreds.emailHash && passH === currentCreds.passHash;
+    const isValid = verifyCredentials(emailH, passH);
 
     if (isValid) {
       sessionStorage.setItem("smv_admin_auth", "1");
       enableAdminMode();
       closeLoginModal();
       showWelcomeCelebrationPopup();
+      // Synchronize authenticated session with Firebase Auth
+      syncFirebaseAuth(email, pass);
     } else {
       loginMessage.textContent = "Invalid credentials. Please verify your email and password.";
       loginMessage.className = "form-message error";
@@ -850,26 +1041,48 @@
   function enableAdminMode() {
     isAdminActive = true;
     document.body.classList.add("is-editing");
-    btnAdminAccess.textContent = "✓ Done Editing";
-    btnAdminAccess.classList.add("active");
-    if (adminBar) adminBar.classList.add("show");
+    if (btnAdminAccess) {
+      btnAdminAccess.textContent = "✓ Done Editing";
+      btnAdminAccess.classList.add("active");
+    }
+    if (btnHeaderLogout) {
+      btnHeaderLogout.style.display = "inline-flex";
+    }
+    if (adminBar) {
+      adminBar.classList.add("show");
+    }
     renderArchive();
   }
 
-  function disableAdminMode() {
+  function handleLogout() {
+    sessionStorage.removeItem("smv_admin_auth");
+    if (window.firebase && firebase.auth) {
+      try {
+        firebase.auth().signOut().catch(() => {});
+      } catch (e) {}
+    }
     isAdminActive = false;
     document.body.classList.remove("is-editing");
-    btnAdminAccess.innerHTML = "🔒 Admin Mode";
-    btnAdminAccess.classList.remove("active");
-    if (adminBar) adminBar.classList.remove("show");
+    if (btnAdminAccess) {
+      btnAdminAccess.innerHTML = "🔒 Admin Mode";
+      btnAdminAccess.classList.remove("active");
+    }
+    if (btnHeaderLogout) {
+      btnHeaderLogout.style.display = "none";
+    }
+    if (adminBar) {
+      adminBar.classList.remove("show");
+    }
     renderArchive();
+    showToast("Signed out of Admin Mode.", "info");
   }
 
-  document.getElementById("btnLogout").addEventListener("click", () => {
-    sessionStorage.removeItem("smv_admin_auth");
-    disableAdminMode();
-    showToast("Signed out of Admin Mode.", "info");
-  });
+  if (btnLogout) {
+    btnLogout.addEventListener("click", handleLogout);
+  }
+  if (btnHeaderLogout) {
+    btnHeaderLogout.addEventListener("click", handleLogout);
+  }
 
   // Restore session
   if (sessionStorage.getItem("smv_admin_auth") === "1") {
@@ -1023,7 +1236,104 @@
   });
 
   /* ==========================================================================
-     SECTION 13: DATE STAMP & INITIALIZATION
+     SECTION 13: CLOUD DATABASE (FIREBASE) MODAL & SETTINGS CONTROLLER
+     ========================================================================== */
+  const cloudConfigModal = document.getElementById("cloudConfigModal");
+  const firebaseDbUrlInput = document.getElementById("firebaseDbUrl");
+  const firebaseApiKeyInput = document.getElementById("firebaseApiKey");
+  const firebaseProjectIdInput = document.getElementById("firebaseProjectId");
+  const cloudConfigMessage = document.getElementById("cloudConfigMessage");
+  const btnCloudConfig = document.getElementById("btnCloudConfig");
+  const btnCloseCloudConfig = document.getElementById("btnCloseCloudConfig");
+  const btnResetCloudConfig = document.getElementById("btnResetCloudConfig");
+  const btnUploadLocalToCloud = document.getElementById("btnUploadLocalToCloud");
+  const cloudConfigForm = document.getElementById("cloudConfigForm");
+
+  if (btnCloudConfig) {
+    btnCloudConfig.addEventListener("click", () => {
+      const current = getCloudConfig();
+      if (firebaseDbUrlInput) firebaseDbUrlInput.value = current.databaseURL || "";
+      if (firebaseApiKeyInput) firebaseApiKeyInput.value = current.apiKey || "";
+      if (firebaseProjectIdInput) firebaseProjectIdInput.value = current.projectId || "";
+      if (cloudConfigMessage) {
+        cloudConfigMessage.className = "form-message";
+        cloudConfigMessage.textContent = "";
+      }
+      if (cloudConfigModal) {
+        cloudConfigModal.classList.add("open");
+        setTimeout(() => firebaseDbUrlInput && firebaseDbUrlInput.focus(), 60);
+      }
+    });
+  }
+
+  if (btnCloseCloudConfig) {
+    btnCloseCloudConfig.addEventListener("click", () => {
+      if (cloudConfigModal) cloudConfigModal.classList.remove("open");
+    });
+  }
+
+  if (cloudConfigForm) {
+    cloudConfigForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const dbUrl = (firebaseDbUrlInput ? firebaseDbUrlInput.value : "").trim();
+      const apiKey = (firebaseApiKeyInput ? firebaseApiKeyInput.value : "").trim();
+      const projectId = (firebaseProjectIdInput ? firebaseProjectIdInput.value : "").trim();
+
+      if (!dbUrl || !dbUrl.startsWith("https://")) {
+        if (cloudConfigMessage) {
+          cloudConfigMessage.textContent = "Please enter a valid Firebase Database URL (starts with https://)";
+          cloudConfigMessage.className = "form-message error";
+        }
+        return;
+      }
+
+      const newConfig = {
+        databaseURL: dbUrl,
+        apiKey: apiKey,
+        projectId: projectId
+      };
+
+      setCloudConfig(newConfig);
+      if (cloudConfigModal) cloudConfigModal.classList.remove("open");
+      showToast("Cloud configuration saved. Connecting...", "info");
+      initCloudDatabase();
+    });
+  }
+
+  if (btnUploadLocalToCloud) {
+    btnUploadLocalToCloud.addEventListener("click", () => {
+      if (!isCloudConnected || !dbRef) {
+        showToast("Cloud DB is not connected yet. Please connect first.", "error");
+        return;
+      }
+      if (confirm("Upload all locally stored question papers and links to the cloud database?")) {
+        dbRef.set(state)
+          .then(() => {
+            showToast("Successfully uploaded local papers to Cloud DB!", "success");
+            if (cloudConfigModal) cloudConfigModal.classList.remove("open");
+          })
+          .catch((err) => {
+            showToast("Upload failed: " + err.message, "error");
+          });
+      }
+    });
+  }
+
+  if (btnResetCloudConfig) {
+    btnResetCloudConfig.addEventListener("click", () => {
+      if (confirm("Disconnect from Cloud Database and revert to browser Local Mode?")) {
+        setCloudConfig(null);
+        isCloudConnected = false;
+        dbRef = null;
+        updateCloudStatusBadge("local", "Local Mode");
+        if (cloudConfigModal) cloudConfigModal.classList.remove("open");
+        showToast("Reverted to local mode.", "info");
+      }
+    });
+  }
+
+  /* ==========================================================================
+     SECTION 14: DATE STAMP & INITIALIZATION
      ========================================================================== */
   function updateDateStamp() {
     const d = new Date();
@@ -1041,4 +1351,5 @@
   updateDateStamp();
   loadArchiveState();
   renderArchive();
+  initCloudDatabase();
 })();

@@ -164,6 +164,23 @@ header.header {
   background: var(--teal);
   box-shadow: 0 0 8px var(--teal);
 }
+.meta-badge.sync-live .dot {
+  background: var(--emerald);
+  box-shadow: 0 0 8px var(--emerald);
+}
+.meta-badge.sync-local .dot {
+  background: var(--amber);
+  box-shadow: 0 0 8px var(--amber);
+}
+.meta-badge.sync-connecting .dot {
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+  animation: pulseSync 1.4s infinite ease-in-out;
+}
+@keyframes pulseSync {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
 
 .meta-ref {
   text-transform: uppercase;

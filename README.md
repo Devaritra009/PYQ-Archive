@@ -33,14 +33,67 @@ Built with **vanilla modern web technologies (HTML5, CSS3, JavaScript)**, the ar
   * Inline editing for paper titles, codes, and Google Drive links.
   * Dedicated status toggle to mark papers as Available, Pending, or Unavailable.
   * Ability to add custom question papers and create new academic sessions.
-* **Storage & Data Management:**
-  * Auto-saves changes directly to browser `localStorage`.
+* **Storage & Real-Time Cloud Synchronization:**
+  * **Firebase Realtime Database Integration:** Paper links and curriculum edits synchronize in real-time across all visitors, students, and devices worldwide.
+  * **Zero-Reload Live Updates:** Changes made by an admin propagate over WebSockets without requiring other users to refresh their browser.
+  * **Offline Resilience:** Automatic fallback to browser `localStorage` if offline or prior to cloud configuration.
   * **Export / Backup:** One-click download of `smv-cs-pyq-archive.json` or copy JSON to clipboard.
-  * **Import:** Restore database from any JSON backup file.
+  * **Import & Cloud Migration:** Restore database from any JSON backup or migrate local browser papers directly into Firebase with a single click.
 * **Responsive Dark Aesthetics:**
   * Cyber-academic dark palette with glassmorphism.
   * High-DPI crystal-sharp college crest emblem.
   * Optimized for desktop, tablet, and mobile screens.
+
+---
+
+## ☁️ Real-Time Cloud Database Setup & Security Hardening (Free Firebase)
+
+Follow these steps to configure Firebase with **read-only access for students** and **write access strictly restricted to the Admin**:
+
+### Step 1: Create a Free Firebase Project
+1. Open [Firebase Console](https://console.firebase.google.com/) and click **Add Project** (e.g. `smv-pyq-archive`).
+2. Google Analytics can be toggled off or on (optional), then click **Create Project**.
+
+### Step 2: Enable Firebase Authentication (Email/Password)
+1. In the left sidebar, click **Build** &rarr; **Authentication** &rarr; click **Get Started**.
+2. Under the **Sign-in method** tab, click **Email/Password**, enable the first toggle (**Email/Password**), and click **Save**.
+3. Under the **Users** tab, click **Add user**:
+   - Email: `aritrasarkarofficial027@gmail.com` (or your chosen admin email)
+   - Password: your strong admin password
+
+### Step 3: Create & Secure Realtime Database
+1. In the left sidebar, click **Build** &rarr; **Realtime Database** &rarr; click **Create Database** (choose default location, e.g. Singapore or US Central).
+2. Go to the **Rules** tab, replace the existing content with the following **Hardened Security Rules**, and click **Publish**:
+   ```json
+   {
+     "rules": {
+       "archive": {
+         ".read": true,
+         ".write": "auth != null",
+         ".validate": "newData.hasChildren(['years', 'papers'])",
+         "papers": {
+           "$paperId": {
+             ".validate": "newData.hasChildren(['code', 'name']) && (!newData.hasChild('link') || newData.child('link').isString())"
+           }
+         }
+       }
+     }
+   }
+   ```
+   > **🔒 Why these rules are secure:**
+   > - **Students & Visitors (`.read: true`):** Can ONLY view the archive, filter papers, copy links, and download PDFs.
+   > - **Write Protection (`.write: "auth != null"`):** Only authenticated admin sessions can add, edit, or delete papers or links. Any unauthenticated write or tampering attempt is immediately rejected by Firebase servers.
+   > - **Data Validation (`.validate`):** Enforces schema integrity, preventing corrupted or malicious data injection.
+
+### Step 4: Connect the Database to Your Website
+1. Copy your Realtime Database URL from the top of the Firebase Realtime Database page (e.g. `https://your-project-id-default-rtdb.firebaseio.com/`).
+2. Open your PYQ Archive website.
+3. Click **🔒 Admin Mode** in the top right header, sign in with your admin credentials.
+4. In the Admin Toolbar, click **☁️ Cloud Sync DB**.
+5. Paste your Database URL and click **✓ Save & Connect**.
+6. Click **⬆️ Upload Local Data to Cloud** to sync all your existing papers and links to the cloud database.
+
+All visitors worldwide will now see paper links update live in real-time, with zero risk of database tampering!
 
 ---
 

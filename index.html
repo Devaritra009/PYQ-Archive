@@ -33,12 +33,19 @@
             <span class="dot"></span>
             <span id="dateStamp">SYNCING ARCHIVE...</span>
           </div>
+          <div class="meta-badge" id="cloudSyncBadge" title="Real-time cloud database connection status">
+            <span class="dot sync-dot" id="cloudSyncDot"></span>
+            <span id="cloudSyncStatus">Checking Cloud...</span>
+          </div>
           <div class="meta-ref">REF: CU/SMV/CS-PYQ</div>
         </div>
         <div class="meta-right">
-          <!-- Repositioned Admin Mode Button in Header -->
+          <!-- Admin Mode & Persistent Logout Controls -->
           <button id="btnAdminAccess" class="btn btn-outline-teal" title="Toggle administrative editorial mode">
             🔒 Admin Mode
+          </button>
+          <button id="btnHeaderLogout" class="btn btn-danger" style="display: none; padding: 5px 11px; font-size: 11px;" title="Sign out of Admin session">
+            Log Out
           </button>
         </div>
       </div>
@@ -160,9 +167,10 @@
     <div id="adminBar" class="admin-bar">
       <div class="admin-info">
         <span>&#9998; Admin Mode Active</span>
-        <span style="color: var(--text-dim); font-weight: normal;">(Edits automatically save to browser storage)</span>
+        <span id="adminSyncHint" style="color: var(--text-dim); font-weight: normal;">(Real-time Cloud Sync)</span>
       </div>
       <div class="admin-actions">
+        <button id="btnCloudConfig" class="btn btn-outline-teal" style="padding: 6px 10px; font-size: 11px;">&#9729; Cloud Sync DB</button>
         <button id="btnExportData" class="btn btn-subtle" style="padding: 6px 10px; font-size: 11px;">&#128190; Export /
           Backup</button>
         <button id="btnImportData" class="btn btn-subtle" style="padding: 6px 10px; font-size: 11px;">&#128229; Import
@@ -398,10 +406,52 @@
     </div>
   </div>
 
+  <!-- Modal 7: Real-time Cloud Database Configuration -->
+  <div id="cloudConfigModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 580px;">
+      <div class="modal-header">
+        <div class="modal-eyebrow">Real-Time Sync Infrastructure</div>
+        <h2 class="modal-title">Cloud Database Sync (Firebase)</h2>
+        <div class="modal-subtitle">Connect Firebase Realtime Database so paper links and updates sync across all devices and visitors instantly</div>
+      </div>
+      <div class="cloud-info-box" style="margin-bottom: 14px; background: rgba(20, 184, 166, 0.08); border: 1px solid rgba(20, 184, 166, 0.25); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+        <strong style="color: var(--teal);">&#9729; Why Cloud Sync?</strong><br />
+        Browser <code>localStorage</code> stays only on your personal machine. Connecting Firebase Realtime Database ensures every student visiting the website sees newly uploaded paper links live in real time.
+      </div>
+      <form id="cloudConfigForm" onsubmit="return false;">
+        <div class="form-group">
+          <label class="form-label" for="firebaseDbUrl">Firebase Realtime Database URL <span style="color: var(--rose);">*</span></label>
+          <input type="url" id="firebaseDbUrl" class="form-input" placeholder="https://your-project-default-rtdb.firebaseio.com" required />
+          <span style="font-size: 11px; color: var(--text-dim); display: block; margin-top: 4px;">Found in Firebase Console &rarr; Build &rarr; Realtime Database</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="firebaseApiKey">Firebase API Key (Optional)</label>
+          <input type="text" id="firebaseApiKey" class="form-input" placeholder="AIzaSy..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="firebaseProjectId">Firebase Project ID (Optional)</label>
+          <input type="text" id="firebaseProjectId" class="form-input" placeholder="smv-pyq-archive" />
+        </div>
+        <div id="cloudConfigMessage" class="form-message"></div>
+        <div class="form-actions" style="margin-top: 16px; flex-wrap: wrap;">
+          <button type="submit" id="btnSaveCloudConfig" class="btn btn-teal" style="flex: 1;">&#10003; Save & Connect</button>
+          <button type="button" id="btnUploadLocalToCloud" class="btn btn-outline-teal" title="Sync existing local papers to cloud">&#8679; Upload Local Data to Cloud</button>
+          <button type="button" id="btnResetCloudConfig" class="btn btn-subtle" title="Reset to local storage">Disconnect</button>
+          <button type="button" id="btnCloseCloudConfig" class="btn btn-subtle">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- ====================================================================
        SECTION 9: TOAST NOTIFICATIONS CONTAINER
        ==================================================================== -->
   <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Firebase Realtime Sync SDKs (Compat version for vanilla HTML/JS) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <!-- Application Logic -->
   <script src="app.js" defer></script>
