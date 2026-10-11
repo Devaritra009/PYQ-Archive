@@ -6,7 +6,7 @@
 
 ## ⚡ Overview
 
-This web repository provides a structured, responsive, and categorized archive of previous year university question papers across all six semesters (Sem 1 to Sem 6) from 2019 onward.
+This web repository provides a structured, responsive, and categorized archive of previous year university question papers across all semesters from 2019 onward.
 
 Built with **vanilla modern web technologies (HTML5, CSS3, JavaScript)**, the archive runs without any external libraries or heavyweight frameworks.
 
@@ -67,23 +67,6 @@ Administrative features are restricted via SHA-256 cryptographic hashes. Credent
 * Edits made in Admin Mode can be exported via **Export Data** to update default static files.
 
 ---
-
-## 💻 Running Locally
-
-No installation, Node build step, or server configuration is required. Simply:
-
-1. Double-click [index.html](file:///d:/Website/PYQ/index.html) in your file explorer to open it directly in any browser.
-2. Or serve it via a local static HTTP server:
-   ```bash
-   # Using Python
-   python -m http.server 8000
-
-   # Or using Node.js
-   npx serve .
-   ```
-
----
-
 ## 👨‍💻 Creator & Attribution
 
 * **Developer:** **GHOST (Aritra)**

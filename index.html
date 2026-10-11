@@ -1,19 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CS PYQ Archive — Sammilani Mahavidyalya | Calcutta University</title>
-  <meta name="description" content="Previous Year Question Paper Archive for B.Sc. Computer Science (Honours) at Sammilani Mahavidyalya, affiliated with University of Calcutta. Download semester-wise question papers." />
+  <title>CS PYQ Archive — Dept of Computer Science | Sammilani Mahavidyalya</title>
+  <meta name="description"
+    content="Previous Year Question Paper Archive for B.Sc. Computer Science (Honours) at Sammilani Mahavidyalya, affiliated with University of Calcutta. Download semester-wise question papers." />
 
   <!-- Google Fonts Preconnect & Stylesheets -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap"
+    rel="stylesheet" />
 
   <!-- External Stylesheet -->
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <div class="container">
 
@@ -41,22 +46,18 @@
       <!-- College & Department Branding Row -->
       <div class="branding-row">
         <div class="crest-wrapper">
-          <img 
-            src="logo-512.png" 
-            alt="Department of Computer Science, Sammilani Mahavidyalya Emblem" 
-            id="crestImg" 
-          />
+          <img src="logo-512.png" alt="Department of Computer Science, Sammilani Mahavidyalya Emblem" id="crestImg" />
         </div>
         <div class="branding-text">
           <div class="college-tagline">
-            <span>Sammilani Mahavidyalya</span>
+            <span>Sammilani Mahavidyalaya</span>
             <span class="sep">&#8226;</span>
-            <span>University of Calcutta</span>
+            <span>affiliated to University of Calcutta</span>
           </div>
           <h1 class="page-title">B.Sc. Computer Science PYQ Archive</h1>
-          <div class="course-subtitle">Honours & Major Curriculum Question Paper Repository (CBCS / CCF)</div>
+          <div class="course-subtitle">B.Sc. Computer Science Question Paper Repository</div>
           <div class="dept-badge">
-            Maintained by <strong>Department of Computer Science</strong> &#8226; Sammilani Mahavidyalya
+            Maintained by <strong>Department of Computer Science</strong> &#8226; Sammilani Mahavidyalaya
           </div>
         </div>
       </div>
@@ -94,7 +95,11 @@
     <div class="notice-box">
       <span class="notice-tag">Notice</span>
       <div class="notice-content">
-        Question papers are organized session-wise and semester-wise (1st–6th Semester). Papers tagged <em>Pending</em> are awaiting paper upload, while papers marked <em>Unavailable</em> correspond to sessions where exams were cancelled (e.g. COVID period) or elective papers not offered.
+        Question papers are organized session-wise and semester-wise (1st–6th Semester). Papers tagged <em>Pending</em>
+        are awaiting paper upload, while papers marked <em>Unavailable</em> correspond to sessions where exams were
+        cancelled (e.g. COVID period) or elective papers not offered. Due to the changes in curriculum some paper codes
+        may be different for some years or be available in different semester. Check the paper name before downloading
+        it.
       </div>
     </div>
 
@@ -106,13 +111,8 @@
       <div class="controls-main-row">
         <div class="search-wrap">
           <span class="search-icon">&#128269;</span>
-          <input 
-            type="text" 
-            id="searchInput" 
-            class="search-input" 
-            placeholder="Search by subject, paper code (e.g. CC-1, DBMS, Python), year..." 
-            autocomplete="off"
-          />
+          <input type="text" id="searchInput" class="search-input"
+            placeholder="Search by subject, paper code (e.g. CC-1, DBMS, Python), year..." autocomplete="off" />
         </div>
 
         <select id="statusFilter" class="filter-select" aria-label="Filter by paper availability">
@@ -145,8 +145,10 @@
         <button class="sem-chip" data-sem="6">Sem 6</button>
 
         <div class="view-toggles">
-          <button id="btnExpandAll" class="btn btn-subtle" style="padding: 4px 9px; font-size: 10.5px;">+ Expand All</button>
-          <button id="btnCollapseAll" class="btn btn-subtle" style="padding: 4px 9px; font-size: 10.5px;">&minus; Collapse</button>
+          <button id="btnExpandAll" class="btn btn-subtle" style="padding: 4px 9px; font-size: 10.5px;">+ Expand
+            All</button>
+          <button id="btnCollapseAll" class="btn btn-subtle" style="padding: 4px 9px; font-size: 10.5px;">&minus;
+            Collapse</button>
         </div>
       </div>
     </section>
@@ -161,18 +163,25 @@
         <span style="color: var(--text-dim); font-weight: normal;">(Edits automatically save to browser storage)</span>
       </div>
       <div class="admin-actions">
-        <button id="btnExportData" class="btn btn-subtle" style="padding: 6px 10px; font-size: 11px;">&#128190; Export / Backup</button>
-        <button id="btnImportData" class="btn btn-subtle" style="padding: 6px 10px; font-size: 11px;">&#128229; Import Data</button>
-        <button id="btnChangePass" class="btn btn-subtle" style="padding: 6px 10px; font-size: 11px;">&#128273; Change Password</button>
+        <button id="btnExportData" class="btn btn-subtle" style="padding: 6px 10px; font-size: 11px;">&#128190; Export /
+          Backup</button>
+        <button id="btnImportData" class="btn btn-subtle" style="padding: 6px 10px; font-size: 11px;">&#128229; Import
+          Data</button>
+        <button id="btnChangePass" class="btn btn-subtle" style="padding: 6px 10px; font-size: 11px;">&#128273; Change
+          Password</button>
         <button id="btnLogout" class="btn btn-danger" style="padding: 6px 10px; font-size: 11px;">Log Out</button>
       </div>
     </div>
 
     <!-- Add Academic Year Row (Edit Mode) -->
     <div id="addYearPanel" class="edit-add-year-panel">
-      <label for="newYearInput" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--teal); font-weight: 600;">+ Add Academic Session:</label>
-      <input type="number" id="newYearInput" class="input-edit" style="width: 130px;" placeholder="e.g. 2027" min="2010" max="2050" />
-      <button id="btnAddYearSubmit" class="btn btn-teal" style="padding: 6px 12px; font-size: 11px;">Add Session</button>
+      <label for="newYearInput"
+        style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--teal); font-weight: 600;">+ Add
+        Academic Session:</label>
+      <input type="number" id="newYearInput" class="input-edit" style="width: 130px;" placeholder="e.g. 2027" min="2010"
+        max="2050" />
+      <button id="btnAddYearSubmit" class="btn btn-teal" style="padding: 6px 12px; font-size: 11px;">Add
+        Session</button>
     </div>
 
     <!-- ====================================================================
@@ -217,7 +226,8 @@
         </div>
       </div>
       <div class="footer-disclaimer">
-        Disclaimer: This archive is an academic resource maintained for the students of Sammilani Mahavidyalya. Question paper copyrights belong to the University of Calcutta.
+        Disclaimer: This archive is an academic resource maintained for the students of Sammilani Mahavidyalya. Question
+        paper copyrights belong to the University of Calcutta.
       </div>
     </footer>
   </div>
@@ -236,11 +246,13 @@
       <form id="loginForm" onsubmit="return false;">
         <div class="form-group">
           <label class="form-label" for="loginEmail">Email Address</label>
-          <input type="email" id="loginEmail" class="form-input" placeholder="admin@email.com" autocomplete="username" required />
+          <input type="email" id="loginEmail" class="form-input" placeholder="admin@email.com" autocomplete="username"
+            required />
         </div>
         <div class="form-group">
           <label class="form-label" for="loginPass">Password</label>
-          <input type="password" id="loginPass" class="form-input" placeholder="Enter password" autocomplete="current-password" required />
+          <input type="password" id="loginPass" class="form-input" placeholder="Enter password"
+            autocomplete="current-password" required />
         </div>
         <div id="loginMessage" class="form-message"></div>
         <div class="form-actions">
@@ -258,7 +270,8 @@
       <div class="welcome-header">
         <div class="modal-eyebrow">Authentication Success</div>
         <h2 class="welcome-title">Welcome Back, Admin!</h2>
-        <p class="welcome-subtitle">Editorial access has been granted. You can now add question papers, update Google Drive/PDF links, tag availability, and export database backups.</p>
+        <p class="welcome-subtitle">Editorial access has been granted. You can now add question papers, update Google
+          Drive/PDF links, tag availability, and export database backups.</p>
       </div>
       <div class="welcome-details">
         <div class="welcome-stat-pill">
@@ -289,11 +302,13 @@
         </div>
         <div class="form-group">
           <label class="form-label" for="addPaperName">Subject / Paper Name</label>
-          <input type="text" id="addPaperName" class="form-input" placeholder="e.g. Computer Fundamentals & Digital Logic" required />
+          <input type="text" id="addPaperName" class="form-input"
+            placeholder="e.g. Computer Fundamentals & Digital Logic" required />
         </div>
         <div class="form-group">
           <label class="form-label" for="addPaperLink">Paper Link (Google Drive / PDF / Cloud URL)</label>
-          <input type="url" id="addPaperLink" class="form-input" placeholder="https://drive.google.com/... or relative PDF link" />
+          <input type="url" id="addPaperLink" class="form-input"
+            placeholder="https://drive.google.com/... or relative PDF link" />
         </div>
         <div class="form-group">
           <label class="form-label" for="addPaperStatus">Paper Availability Status</label>
@@ -326,7 +341,8 @@
         </div>
         <div class="form-group">
           <label class="form-label" for="newAdminPass">New Password</label>
-          <input type="password" id="newAdminPass" class="form-input" placeholder="Enter new strong password" required />
+          <input type="password" id="newAdminPass" class="form-input" placeholder="Enter new strong password"
+            required />
         </div>
         <div class="form-group">
           <label class="form-label" for="confirmAdminPass">Confirm Password</label>
@@ -334,7 +350,8 @@
         </div>
         <div id="changePassMessage" class="form-message"></div>
         <div class="form-actions">
-          <button type="submit" id="btnSubmitChangePass" class="btn btn-teal" style="flex: 1;">Update Credentials</button>
+          <button type="submit" id="btnSubmitChangePass" class="btn btn-teal" style="flex: 1;">Update
+            Credentials</button>
           <button type="button" id="btnCancelChangePass" class="btn btn-subtle">Cancel</button>
         </div>
       </form>
@@ -369,7 +386,8 @@
         <div class="modal-subtitle">Paste JSON or select a file to restore question papers</div>
       </div>
       <div class="form-group">
-        <input type="file" id="importFileInput" accept=".json" style="margin-bottom: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--text-muted);" />
+        <input type="file" id="importFileInput" accept=".json"
+          style="margin-bottom: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--text-muted);" />
         <textarea id="importJsonArea" class="json-textarea" placeholder="Or paste valid JSON data here..."></textarea>
       </div>
       <div id="importMessage" class="form-message"></div>
@@ -388,4 +406,5 @@
   <!-- Application Logic -->
   <script src="app.js" defer></script>
 </body>
+
 </html>
