@@ -590,6 +590,15 @@ body.is-editing .edit-add-year-panel {
   display: flex;
 }
 
+.btn-del-year,
+.btn-open-add-paper {
+  display: none !important;
+}
+body.is-editing .btn-del-year,
+body.is-editing .btn-open-add-paper {
+  display: inline-flex !important;
+}
+
 /* --------------------------------------------------------------------------
    8. REDESIGNED YEAR NAVIGATION & SECTION
    -------------------------------------------------------------------------- */

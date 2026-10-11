@@ -58,12 +58,8 @@
      Credentials are stored solely as one-way SHA-256 cryptographic digests.
      Plaintext passwords/emails are never exposed in the source code.
      ========================================================================== */
-  const AUTH_EMAIL_HASH = "4f8447f5ac58942f47ce90b26d2764c3adb88e7c1ab033e31a1745dd952975c9"; // aritrasarkarofficial027@gmail.com
-  const AUTH_PASS_HASH = "b4423abfddb2cab78c6518599eae073b75c1d7cb602c7ab85c09bb1ad6af249b";  // Aritra@2006
-
-  // Preserved legacy hashes for backward compatibility
-  const LEGACY_EMAIL_HASH = "1eb8957294136f321465d733c4272e57015fb7536f584df57161d99a192a1568";
-  const LEGACY_PASS_HASH = "0725789d349166a8ddfb9bbd688d675ee311df53c27327def9339ebbde2d64cc";
+  const AUTH_EMAIL_HASH = "1eb8957294136f321465d733c4272e57015fb7536f584df57161d99a192a1568"; // csdeptsmvstudent@gmail.com
+  const AUTH_PASS_HASH = "0725789d349166a8ddfb9bbd688d675ee311df53c27327def9339ebbde2d64cc";  // csstudent2206@#
 
   async function sha256(text) {
     const enc = new TextEncoder().encode(text);
@@ -74,19 +70,11 @@
   }
 
   function getAuthCredentials() {
-    const customEmailHash = localStorage.getItem("smv_admin_email_hash");
-    const customPassHash = localStorage.getItem("smv_admin_pass_hash");
-    if (customEmailHash && customPassHash) {
-      return { emailHash: customEmailHash, passHash: customPassHash };
-    }
     return { emailHash: AUTH_EMAIL_HASH, passHash: AUTH_PASS_HASH };
   }
 
   function verifyCredentials(emailHash, passHash) {
-    const creds = getAuthCredentials();
-    const isPrimaryMatch = emailHash === creds.emailHash && passHash === creds.passHash;
-    const isLegacyMatch = emailHash === LEGACY_EMAIL_HASH && passHash === LEGACY_PASS_HASH;
-    return isPrimaryMatch || isLegacyMatch;
+    return emailHash === AUTH_EMAIL_HASH && passHash === AUTH_PASS_HASH;
   }
 
   function setAuthCredentials(emailHash, passHash) {
@@ -448,11 +436,7 @@
             </div>
           </div>
           <div class="year-right">
-            ${
-              isAdminActive
-                ? `<button class="btn btn-danger btn-del-year" data-year="${year}" style="padding: 4px 8px; font-size: 10.5px;">&times; Delete Year</button>`
-                : ""
-            }
+            <button class="btn btn-danger btn-del-year" data-year="${year}" style="padding: 4px 8px; font-size: 10.5px;">&times; Delete Year</button>
             <div class="year-chevron">&#9660;</div>
           </div>
         </div>
@@ -481,11 +465,7 @@
               <span class="sem-roman-badge">SEM ${SEM_ROMAN[s]}</span>
               <span class="sem-name">${SEM_WORD[s]} Semester</span>
             </div>
-            ${
-              isAdminActive
-                ? `<button class="btn btn-outline-teal btn-open-add-paper" data-year="${year}" data-sem="${s}" style="padding: 3px 8px; font-size: 10px;">+ Add Paper</button>`
-                : ""
-            }
+            <button class="btn btn-outline-teal btn-open-add-paper" data-year="${year}" data-sem="${s}" style="padding: 3px 8px; font-size: 10px;">+ Add Paper</button>
           </div>
           <ul class="paper-list"></ul>
         `;
@@ -579,6 +559,73 @@
     updateStats();
   }
 
+  function updateSinglePaperRow(id) {
+    const paper = state.papers[id];
+    if (!paper) return;
+    const row = document.querySelector(`.paper-item[data-id="${id}"]`);
+    if (!row) return;
+
+    const isUnavailable = paper.status === "unavailable";
+    const hasLink = !isUnavailable && paper.link && paper.link.trim().length > 0;
+    const safeUrl = hasLink ? sanitizeUrl(paper.link) : "";
+
+    let statusLabel = "";
+    let statusClass = "";
+    let rowStatus = "pending";
+
+    if (isUnavailable) {
+      statusLabel = "&#8856; Unavailable";
+      statusClass = "unavailable";
+      rowStatus = "unavailable";
+    } else if (hasLink) {
+      statusLabel = "&#9679; Available";
+      statusClass = "available";
+      rowStatus = "available";
+    } else {
+      statusLabel = "&#9675; Pending Upload";
+      statusClass = "pending";
+      rowStatus = "pending";
+    }
+
+    row.className = "paper-item" + (isUnavailable ? " is-unavailable" : "");
+    row.dataset.status = rowStatus;
+
+    const codeEl = row.querySelector(".paper-code");
+    if (codeEl) codeEl.textContent = paper.code || "PAPER";
+
+    const titleEl = row.querySelector(".paper-title");
+    if (titleEl) titleEl.textContent = paper.name || "Untitled Paper";
+
+    const statusEl = row.querySelector(".paper-status-indicator");
+    if (statusEl) {
+      statusEl.className = `paper-status-indicator ${statusClass}`;
+      statusEl.innerHTML = statusLabel;
+    }
+
+    const actionsEl = row.querySelector(".paper-actions-group");
+    if (actionsEl) {
+      actionsEl.innerHTML = isUnavailable
+        ? `<span class="action-btn action-btn-disabled btn-unavail-text" title="Exam not held or paper unavailable">Unavailable</span>`
+        : hasLink && safeUrl
+        ? `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer" class="action-btn action-btn-view" title="Open question paper">View PDF &#8599;</a>
+           <button class="action-btn action-btn-copy btn-copy-link" data-url="${escapeHtml(safeUrl)}" title="Copy paper link">&#128203;</button>`
+        : `<span class="action-btn action-btn-disabled">Pending</span>`;
+
+      const copyBtn = actionsEl.querySelector(".btn-copy-link");
+      if (copyBtn) {
+        copyBtn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          try {
+            await navigator.clipboard.writeText(copyBtn.dataset.url);
+            showToast("Paper link copied to clipboard!", "success");
+          } catch (err) {
+            showToast("Could not copy link automatically", "error");
+          }
+        });
+      }
+    }
+  }
+
   /* ==========================================================================
      SECTION 7: DYNAMIC EVENT LISTENERS
      ========================================================================= */
@@ -646,14 +693,14 @@
         queueSave();
       });
 
-      // When field value changes (blur, Enter, or select change), save and update badges live
+      // When field value changes (blur, Enter, or select change), update only this row (no full page redraw)
       input.addEventListener("change", () => {
         const id = input.dataset.id;
         const field = input.dataset.field;
         if (!state.papers[id]) state.papers[id] = { code: "", name: "", link: "", status: "auto" };
         state.papers[id][field] = input.value;
         saveArchiveState();
-        renderArchive();
+        updateSinglePaperRow(id);
       });
     });
   }
@@ -946,14 +993,13 @@
     const isAuthenticated = sessionStorage.getItem("smv_admin_auth") === "1";
     if (isAuthenticated) {
       if (isAdminActive) {
-        // Switch to preview mode (hides input fields, but keeps session and Logout button visible)
+        // Switch to preview mode (hides inputs, keeps session & Logout button visible)
         isAdminActive = false;
         document.body.classList.remove("is-editing");
         btnAdminAccess.innerHTML = "✏️ Edit Mode";
         btnAdminAccess.classList.remove("active");
         if (adminBar) adminBar.classList.remove("show");
         if (btnHeaderLogout) btnHeaderLogout.style.display = "inline-flex";
-        renderArchive();
       } else {
         // Return to active edit mode
         enableAdminMode();
@@ -1051,7 +1097,6 @@
     if (adminBar) {
       adminBar.classList.add("show");
     }
-    renderArchive();
   }
 
   function handleLogout() {
@@ -1073,7 +1118,6 @@
     if (adminBar) {
       adminBar.classList.remove("show");
     }
-    renderArchive();
     showToast("Signed out of Admin Mode.", "info");
   }
 
@@ -1302,20 +1346,29 @@
 
   if (btnUploadLocalToCloud) {
     btnUploadLocalToCloud.addEventListener("click", () => {
-      if (!isCloudConnected || !dbRef) {
-        showToast("Cloud DB is not connected yet. Please connect first.", "error");
+      if (!dbRef) {
+        initCloudDatabase();
+      }
+      if (!dbRef) {
+        showToast("Cloud DB could not be initialized. Please check Database URL.", "error");
         return;
       }
-      if (confirm("Upload all locally stored question papers and links to the cloud database?")) {
-        dbRef.set(state)
-          .then(() => {
-            showToast("Successfully uploaded local papers to Cloud DB!", "success");
-            if (cloudConfigModal) cloudConfigModal.classList.remove("open");
-          })
-          .catch((err) => {
+      showToast("Uploading papers to Cloud DB...", "info");
+      dbRef.set(state)
+        .then(() => {
+          isCloudConnected = true;
+          updateCloudStatusBadge("live", "Cloud Live");
+          showToast("Successfully uploaded local papers to Cloud DB!", "success");
+          if (cloudConfigModal) cloudConfigModal.classList.remove("open");
+        })
+        .catch((err) => {
+          console.error("Cloud upload error:", err);
+          if (err && err.message && err.message.toLowerCase().includes("permission_denied")) {
+            showToast("Firebase Rule Blocked: Please set .read: true, .write: true in Firebase Console Rules", "error");
+          } else {
             showToast("Upload failed: " + err.message, "error");
-          });
-      }
+          }
+        });
     });
   }
 
