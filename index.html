@@ -8,6 +8,11 @@
   <meta name="description"
     content="Previous Year Question Paper Archive for B.Sc. Computer Science (Honours) at Sammilani Mahavidyalya, affiliated with University of Calcutta. Download semester-wise question papers." />
 
+  <!-- Security Headers & Defense Meta Tags -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com wss://*.firebasedatabase.app https://identitytoolkit.googleapis.com; img-src 'self' data: https:; object-src 'none'; base-uri 'self';" />
+
   <!-- Google Fonts Preconnect & Stylesheets -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -329,11 +334,11 @@
         <!-- Cross-Year & Cross-Semester Replication Options -->
         <div class="form-group cross-sem-box">
           <label class="checkbox-label" for="addPaperSyncAllYears">
-            <input type="checkbox" id="addPaperSyncAllYears" checked />
-            <span style="font-weight: 600; color: var(--teal);">&#8635; Update in all academic years for this semester</span>
+            <input type="checkbox" id="addPaperSyncAllYears" />
+            <span style="font-weight: 600; color: var(--teal);">&#8635; Also apply this paper to all other academic years for this semester</span>
           </label>
           <div style="font-size: 11px; color: var(--text-dim); margin: 3px 0 10px 23px;">
-            Automatically applies this paper code & name to other sessions (e.g. 2026, 2025, 2024...).
+            Leave unchecked to add to this session only. Check to copy this paper code & name to other sessions.
           </div>
 
           <label class="checkbox-label" for="addPaperApplyOtherSems">
@@ -455,6 +460,11 @@
       <div class="cloud-info-box" style="margin-bottom: 14px; background: rgba(20, 184, 166, 0.08); border: 1px solid rgba(20, 184, 166, 0.25); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 12px; color: var(--text-muted); line-height: 1.5;">
         <strong style="color: var(--teal);">&#9729; Why Cloud Sync?</strong><br />
         Browser <code>localStorage</code> stays only on your personal machine. Connecting Firebase Realtime Database ensures every student visiting the website sees newly uploaded paper links live in real time.
+      </div>
+      <div class="cloud-security-box" style="margin-bottom: 14px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 11.5px; color: var(--text-muted); line-height: 1.5;">
+        <strong style="color: var(--emerald);">&#128274; Security Recommendation:</strong><br />
+        To protect your cloud database from unauthorized public overwrite, set in Firebase Console &rarr; Realtime Database &rarr; Rules:
+        <code style="display: block; background: var(--bg-dark); padding: 6px 8px; border-radius: 4px; margin-top: 5px; color: var(--teal); font-family: monospace;">{"rules": {"archive": {".read": true, ".write": "auth != null"}}}</code>
       </div>
       <form id="cloudConfigForm" onsubmit="return false;">
         <div class="form-group">

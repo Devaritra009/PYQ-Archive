@@ -55,11 +55,11 @@
 
   /* ==========================================================================
      SECTION 2: CRYPTOGRAPHIC SECURITY & AUTHENTICATION
-     Credentials are stored solely as one-way SHA-256 cryptographic digests.
+     Credentials are verified solely via cryptographic SHA-256 digests.
      Plaintext passwords/emails are never exposed in the source code.
      ========================================================================== */
-  const AUTH_EMAIL_HASH = "1eb8957294136f321465d733c4272e57015fb7536f584df57161d99a192a1568"; // csdeptsmvstudent@gmail.com
-  const AUTH_PASS_HASH = "0725789d349166a8ddfb9bbd688d675ee311df53c27327def9339ebbde2d64cc";  // csstudent2206@#
+  const AUTH_EMAIL_HASH = "1eb8957294136f321465d733c4272e57015fb7536f584df57161d99a192a1568";
+  const AUTH_PASS_HASH = "0725789d349166a8ddfb9bbd688d675ee311df53c27327def9339ebbde2d64cc";
 
   async function sha256(text) {
     const enc = new TextEncoder().encode(text);
@@ -70,11 +70,21 @@
   }
 
   function getAuthCredentials() {
-    return { emailHash: AUTH_EMAIL_HASH, passHash: AUTH_PASS_HASH };
+    try {
+      const storedEmailHash = localStorage.getItem("smv_admin_email_hash");
+      const storedPassHash = localStorage.getItem("smv_admin_pass_hash");
+      return {
+        emailHash: storedEmailHash || AUTH_EMAIL_HASH,
+        passHash: storedPassHash || AUTH_PASS_HASH
+      };
+    } catch (e) {
+      return { emailHash: AUTH_EMAIL_HASH, passHash: AUTH_PASS_HASH };
+    }
   }
 
   function verifyCredentials(emailHash, passHash) {
-    return emailHash === AUTH_EMAIL_HASH && passHash === AUTH_PASS_HASH;
+    const creds = getAuthCredentials();
+    return emailHash === creds.emailHash && passHash === creds.passHash;
   }
 
   function setAuthCredentials(emailHash, passHash) {
@@ -90,9 +100,10 @@
     const trimmed = rawUrl.trim();
     if (!trimmed) return "";
     // Strict URL validation: Only allow safe HTTP/HTTPS or relative path navigation
-    // Strictly blocks javascript:, data:, vbscript:, mailto:, file:
-    if (/^(https?:\/\/|\/|\.\/|\.\.\/)/i.test(trimmed)) {
-      // Reject any URLs containing control characters, unescaped quotes, or angle brackets
+    // Explicitly disallows protocol-relative URLs (//) to prevent open redirection to arbitrary domains
+    // Strictly blocks javascript:, data:, vbscript:, mailto:, file:, blob:
+    if (/^(https?:\/\/|\/(?!\/)|\.\/|\.\.\/)/i.test(trimmed)) {
+      // Reject any URLs containing control characters, unescaped quotes, angle brackets, or newlines
       if (/[\s<>"'`\\]/.test(trimmed)) {
         return "";
       }
@@ -109,6 +120,52 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
+  }
+
+  /**
+   * Prototype Pollution & Injection Defense: Validates and sanitizes archive state
+   */
+  function validateAndSanitizeArchiveData(data) {
+    if (!data || typeof data !== "object") {
+      throw new Error("Invalid format. Data must be an object.");
+    }
+    if (!Array.isArray(data.years) || typeof data.papers !== "object") {
+      throw new Error("Data must contain 'years' array and 'papers' object.");
+    }
+
+    const cleanYears = [];
+    data.years.forEach((y) => {
+      const yr = parseInt(y, 10);
+      if (!isNaN(yr) && yr >= 2000 && yr <= 2099 && !cleanYears.includes(yr)) {
+        cleanYears.push(yr);
+      }
+    });
+    cleanYears.sort((a, b) => b - a);
+
+    if (cleanYears.length === 0) {
+      throw new Error("No valid academic years found.");
+    }
+
+    const cleanPapers = {};
+    for (const key of Object.keys(data.papers)) {
+      if (!Object.prototype.hasOwnProperty.call(data.papers, key)) continue;
+      // Block prototype pollution
+      if (key === "__proto__" || key === "constructor" || key === "prototype") continue;
+      // Strict key format
+      if (!/^y\d{4}-s[1-6]-p\d+$/.test(key)) continue;
+
+      const p = data.papers[key];
+      if (p && typeof p === "object") {
+        cleanPapers[key] = {
+          code: String(p.code || "").slice(0, 50),
+          name: String(p.name || "").slice(0, 250),
+          link: sanitizeUrl(p.link || ""),
+          status: p.status === "unavailable" ? "unavailable" : "auto"
+        };
+      }
+    }
+
+    return { years: cleanYears, papers: cleanPapers };
   }
 
   /* ==========================================================================
@@ -212,10 +269,8 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed.years) && parsed.papers) {
-          state = parsed;
-          return;
-        }
+        state = validateAndSanitizeArchiveData(parsed);
+        return;
       }
     } catch (e) {
       console.warn("Could not load from localStorage, falling back to defaults.", e);
@@ -780,79 +835,25 @@
       });
     });
 
-    // Inline inputs auto-save & cross-year synchronization for code/name
+    // Inline inputs auto-save (modifies this specific paper only; click "Sync to All Years" on the semester header to sync across other sessions)
     document.querySelectorAll(".edit-paper-field").forEach((input) => {
       input.addEventListener("input", () => {
         const id = input.dataset.id;
         const field = input.dataset.field;
         if (!state.papers[id]) state.papers[id] = { code: "", name: "", link: "", status: "auto" };
         state.papers[id][field] = input.value;
-
-        // Automatically synchronize paper code & name to other academic years for the same semester
-        if (field === "code" || field === "name") {
-          const match = id.match(/^y(\d+)-s(\d+)-p(\d+)$/);
-          if (match) {
-            const year = parseInt(match[1], 10);
-            const sem = parseInt(match[2], 10);
-            const pIdx = parseInt(match[3], 10);
-
-            (state.years || []).forEach((oy) => {
-              if (oy === year) return;
-              const targetId = `y${oy}-s${sem}-p${pIdx}`;
-              if (!state.papers[targetId]) {
-                state.papers[targetId] = { code: "", name: "", link: "", status: "auto" };
-              }
-              state.papers[targetId][field] = input.value;
-
-              // Mirror value in other open inputs in the DOM
-              const otherInput = document.querySelector(
-                `.edit-paper-field[data-id="${targetId}"][data-field="${field}"]`
-              );
-              if (otherInput && otherInput !== input) {
-                otherInput.value = input.value;
-              }
-            });
-          }
-        }
-
         queueSave();
       });
 
-      // When field value changes (blur, Enter, or select change), update this row and matching rows across other years
+      // When field value changes (blur, Enter, or select change), update only this row
       input.addEventListener("change", () => {
         const id = input.dataset.id;
         const field = input.dataset.field;
         if (!state.papers[id]) state.papers[id] = { code: "", name: "", link: "", status: "auto" };
         state.papers[id][field] = input.value;
-
-        if (field === "code" || field === "name") {
-          const match = id.match(/^y(\d+)-s(\d+)-p(\d+)$/);
-          if (match) {
-            const sem = parseInt(match[2], 10);
-            const pIdx = parseInt(match[3], 10);
-
-            (state.years || []).forEach((oy) => {
-              const targetId = `y${oy}-s${sem}-p${pIdx}`;
-              if (!state.papers[targetId]) {
-                state.papers[targetId] = { code: "", name: "", link: "", status: "auto" };
-              }
-              state.papers[targetId][field] = input.value;
-              updateSinglePaperRow(targetId);
-
-              const otherInput = document.querySelector(
-                `.edit-paper-field[data-id="${targetId}"][data-field="${field}"]`
-              );
-              if (otherInput && otherInput !== input) {
-                otherInput.value = input.value;
-              }
-            });
-          }
-        } else {
-          updateSinglePaperRow(id);
-        }
-
         clearTimeout(saveTimer);
         saveArchiveState();
+        updateSinglePaperRow(id);
       });
 
       // Prevent accidental form actions on Enter, commit field and blur
@@ -998,29 +999,7 @@
   function deletePaper(id) {
     if (!state.papers[id]) return;
     const name = state.papers[id].name || "Paper";
-    const match = id.match(/^y(\d+)-s(\d+)-p(\d+)$/);
-
-    if (match) {
-      const year = parseInt(match[1], 10);
-      const sem = parseInt(match[2], 10);
-      const pIdx = parseInt(match[3], 10);
-
-      const delAll = confirm(
-        `Delete "${name}" from Semester ${SEM_ROMAN[sem]} across ALL academic years?\n\n` +
-        `• Click OK to delete from ALL academic years.\n` +
-        `• Click Cancel to delete from session ${year} only.`
-      );
-
-      if (delAll) {
-        (state.years || []).forEach((oy) => {
-          delete state.papers[`y${oy}-s${sem}-p${pIdx}`];
-        });
-        saveArchiveState();
-        renderArchive();
-        showToast(`Deleted "${name}" from Semester ${SEM_ROMAN[sem]} across all years`, "info");
-        return;
-      }
-    }
+    if (!confirm(`Delete "${name}" from this session?`)) return;
 
     delete state.papers[id];
     saveArchiveState();
@@ -1146,7 +1125,7 @@
     document.getElementById("addPaperModalSubtitle").textContent = `Session ${year} • Semester ${SEM_ROMAN[sem]} (${SEM_WORD[sem]} Sem)`;
 
     // Cross-year & cross-semester settings
-    if (addPaperSyncAllYears) addPaperSyncAllYears.checked = true;
+    if (addPaperSyncAllYears) addPaperSyncAllYears.checked = false;
     const shouldExpandOther = !!(prefillData && prefillData.applyOther);
     if (addPaperApplyOtherSems) {
       addPaperApplyOtherSems.checked = shouldExpandOther;
@@ -1236,9 +1215,9 @@
     const newId = `y${year}-s${sem}-p${nextIdx}`;
     state.papers[newId] = { code, name, link, status };
 
-    // 2. Automatically synchronize this paper to other academic years for the same semester
+    // 2. Synchronize this paper to other academic years for the same semester if selected
     let syncCount = 0;
-    const syncAllYears = addPaperSyncAllYears ? addPaperSyncAllYears.checked : true;
+    const syncAllYears = addPaperSyncAllYears ? addPaperSyncAllYears.checked : false;
     if (syncAllYears) {
       (state.years || []).forEach((y) => {
         if (y === year) return;
@@ -1609,8 +1588,19 @@
     }
   }
 
+  let loginAttempts = 0;
+  let lockoutTimestamp = 0;
+
   document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
+    const now = Date.now();
+    if (now < lockoutTimestamp) {
+      const waitSeconds = Math.ceil((lockoutTimestamp - now) / 1000);
+      loginMessage.textContent = `Security lockout active. Please wait ${waitSeconds}s before trying again.`;
+      loginMessage.className = "form-message error";
+      return;
+    }
+
     const email = loginEmail.value.trim().toLowerCase();
     const pass = loginPass.value;
 
@@ -1620,6 +1610,8 @@
     const isValid = verifyCredentials(emailH, passH);
 
     if (isValid) {
+      loginAttempts = 0;
+      lockoutTimestamp = 0;
       sessionStorage.setItem("smv_admin_auth", "1");
       enableAdminMode();
       closeLoginModal();
@@ -1627,7 +1619,14 @@
       // Synchronize authenticated session with Firebase Auth
       syncFirebaseAuth(email, pass);
     } else {
-      loginMessage.textContent = "Invalid credentials. Please verify your email and password.";
+      loginAttempts++;
+      if (loginAttempts >= 5) {
+        lockoutTimestamp = Date.now() + 30000; // 30 second lockout
+        loginMessage.textContent = "Too many failed login attempts. Account access temporarily locked for 30 seconds.";
+      } else {
+        const remaining = 5 - loginAttempts;
+        loginMessage.textContent = `Invalid credentials. (${remaining} attempt${remaining === 1 ? "" : "s"} remaining before temporary lockout)`;
+      }
       loginMessage.className = "form-message error";
     }
   });
@@ -1708,8 +1707,8 @@
     const pass = newAdminPass.value;
     const confirm = confirmAdminPass.value;
 
-    if (pass.length < 6) {
-      changePassMessage.textContent = "Password must be at least 6 characters long.";
+    if (pass.length < 8) {
+      changePassMessage.textContent = "Password must be at least 8 characters long for security.";
       changePassMessage.className = "form-message error";
       return;
     }
@@ -1800,15 +1799,12 @@
         return;
       }
       const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed.years) || typeof parsed.papers !== "object") {
-        throw new Error("Invalid structure. Must contain 'years' array and 'papers' object.");
-      }
-      state = parsed;
+      state = validateAndSanitizeArchiveData(parsed);
       saveArchiveState();
       activeYearFilter = "all";
       renderArchive();
       importModal.classList.remove("open");
-      showToast("Archive data restored successfully!", "success");
+      showToast("Archive data verified and restored successfully!", "success");
     } catch (err) {
       importMessage.textContent = "Import error: " + err.message;
       importMessage.className = "form-message error";
