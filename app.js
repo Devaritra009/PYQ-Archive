@@ -504,6 +504,7 @@
             </div>
             <div class="sem-header-actions">
               <button class="btn btn-outline-teal btn-open-add-paper" data-year="${year}" data-sem="${s}" style="padding: 3px 8px; font-size: 10px;" title="Add question paper to this semester">+ Add Paper</button>
+              <button class="btn btn-subtle btn-sync-sem-years" data-year="${year}" data-sem="${s}" style="padding: 3px 8px; font-size: 10px;" title="Sync this semester's subject codes & names across all other academic years">&#8635; Sync to All Years</button>
               <button class="btn btn-subtle btn-apply-sem-papers" data-year="${year}" data-sem="${s}" style="padding: 3px 8px; font-size: 10px;" title="Apply this semester's subject codes & papers to other semesters">&#10697; Apply to Other Sems</button>
             </div>
           </div>
@@ -760,6 +761,16 @@
       });
     });
 
+    // Sync Semester across all academic sessions
+    document.querySelectorAll(".btn-sync-sem-years").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const year = parseInt(btn.dataset.year, 10);
+        const sem = parseInt(btn.dataset.sem, 10);
+        syncSemesterToAllYears(year, sem);
+      });
+    });
+
     // Delete Paper
     document.querySelectorAll(".btn-del-paper").forEach((btn) => {
       btn.addEventListener("click", (e) => {
@@ -769,25 +780,79 @@
       });
     });
 
-    // Inline inputs auto-save
+    // Inline inputs auto-save & cross-year synchronization for code/name
     document.querySelectorAll(".edit-paper-field").forEach((input) => {
       input.addEventListener("input", () => {
         const id = input.dataset.id;
         const field = input.dataset.field;
         if (!state.papers[id]) state.papers[id] = { code: "", name: "", link: "", status: "auto" };
         state.papers[id][field] = input.value;
+
+        // Automatically synchronize paper code & name to other academic years for the same semester
+        if (field === "code" || field === "name") {
+          const match = id.match(/^y(\d+)-s(\d+)-p(\d+)$/);
+          if (match) {
+            const year = parseInt(match[1], 10);
+            const sem = parseInt(match[2], 10);
+            const pIdx = parseInt(match[3], 10);
+
+            (state.years || []).forEach((oy) => {
+              if (oy === year) return;
+              const targetId = `y${oy}-s${sem}-p${pIdx}`;
+              if (!state.papers[targetId]) {
+                state.papers[targetId] = { code: "", name: "", link: "", status: "auto" };
+              }
+              state.papers[targetId][field] = input.value;
+
+              // Mirror value in other open inputs in the DOM
+              const otherInput = document.querySelector(
+                `.edit-paper-field[data-id="${targetId}"][data-field="${field}"]`
+              );
+              if (otherInput && otherInput !== input) {
+                otherInput.value = input.value;
+              }
+            });
+          }
+        }
+
         queueSave();
       });
 
-      // When field value changes (blur, Enter, or select change), update only this row (no full page redraw)
+      // When field value changes (blur, Enter, or select change), update this row and matching rows across other years
       input.addEventListener("change", () => {
         const id = input.dataset.id;
         const field = input.dataset.field;
         if (!state.papers[id]) state.papers[id] = { code: "", name: "", link: "", status: "auto" };
         state.papers[id][field] = input.value;
+
+        if (field === "code" || field === "name") {
+          const match = id.match(/^y(\d+)-s(\d+)-p(\d+)$/);
+          if (match) {
+            const sem = parseInt(match[2], 10);
+            const pIdx = parseInt(match[3], 10);
+
+            (state.years || []).forEach((oy) => {
+              const targetId = `y${oy}-s${sem}-p${pIdx}`;
+              if (!state.papers[targetId]) {
+                state.papers[targetId] = { code: "", name: "", link: "", status: "auto" };
+              }
+              state.papers[targetId][field] = input.value;
+              updateSinglePaperRow(targetId);
+
+              const otherInput = document.querySelector(
+                `.edit-paper-field[data-id="${targetId}"][data-field="${field}"]`
+              );
+              if (otherInput && otherInput !== input) {
+                otherInput.value = input.value;
+              }
+            });
+          }
+        } else {
+          updateSinglePaperRow(id);
+        }
+
         clearTimeout(saveTimer);
         saveArchiveState();
-        updateSinglePaperRow(id);
       });
 
       // Prevent accidental form actions on Enter, commit field and blur
@@ -931,13 +996,84 @@
   }
 
   function deletePaper(id) {
-    if (state.papers[id]) {
-      const name = state.papers[id].name || "Paper";
-      delete state.papers[id];
-      saveArchiveState();
-      renderArchive();
-      showToast(`Deleted "${name}"`, "info");
+    if (!state.papers[id]) return;
+    const name = state.papers[id].name || "Paper";
+    const match = id.match(/^y(\d+)-s(\d+)-p(\d+)$/);
+
+    if (match) {
+      const year = parseInt(match[1], 10);
+      const sem = parseInt(match[2], 10);
+      const pIdx = parseInt(match[3], 10);
+
+      const delAll = confirm(
+        `Delete "${name}" from Semester ${SEM_ROMAN[sem]} across ALL academic years?\n\n` +
+        `• Click OK to delete from ALL academic years.\n` +
+        `• Click Cancel to delete from session ${year} only.`
+      );
+
+      if (delAll) {
+        (state.years || []).forEach((oy) => {
+          delete state.papers[`y${oy}-s${sem}-p${pIdx}`];
+        });
+        saveArchiveState();
+        renderArchive();
+        showToast(`Deleted "${name}" from Semester ${SEM_ROMAN[sem]} across all years`, "info");
+        return;
+      }
     }
+
+    delete state.papers[id];
+    saveArchiveState();
+    renderArchive();
+    showToast(`Deleted "${name}"`, "info");
+  }
+
+  function syncSemesterToAllYears(sourceYear, sem) {
+    const sourcePapers = [];
+    for (let i = 1; i <= 30; i++) {
+      const id = `y${sourceYear}-s${sem}-p${i}`;
+      if (state.papers[id] && state.papers[id].name) {
+        sourcePapers.push({ pIdx: i, ...state.papers[id] });
+      }
+    }
+
+    if (sourcePapers.length === 0) {
+      showToast(`No papers found in Semester ${SEM_ROMAN[sem]} (${sourceYear}) to sync.`, "error");
+      return;
+    }
+
+    const otherYears = (state.years || []).filter((y) => y !== sourceYear);
+    if (otherYears.length === 0) {
+      showToast("No other academic sessions exist to sync with.", "info");
+      return;
+    }
+
+    const confirmed = confirm(
+      `Sync all ${sourcePapers.length} paper code(s) & name(s) from Semester ${SEM_ROMAN[sem]} (${sourceYear}) to all other academic sessions (${otherYears.join(", ")})?\n\n` +
+      `Existing PDF links for each session will be preserved.`
+    );
+    if (!confirmed) return;
+
+    otherYears.forEach((oy) => {
+      sourcePapers.forEach((sp) => {
+        const targetId = `y${oy}-s${sem}-p${sp.pIdx}`;
+        if (!state.papers[targetId]) {
+          state.papers[targetId] = {
+            code: sp.code,
+            name: sp.name,
+            link: "",
+            status: "auto"
+          };
+        } else {
+          state.papers[targetId].code = sp.code;
+          state.papers[targetId].name = sp.name;
+        }
+      });
+    });
+
+    saveArchiveState();
+    renderArchive();
+    showToast(`Synced Semester ${SEM_ROMAN[sem]} papers across all ${otherYears.length} other academic years!`, "success");
   }
 
   // Add Year
@@ -991,9 +1127,9 @@
   const addPaperLink = document.getElementById("addPaperLink");
   const addPaperStatus = document.getElementById("addPaperStatus");
   const addPaperMessage = document.getElementById("addPaperMessage");
+  const addPaperSyncAllYears = document.getElementById("addPaperSyncAllYears");
   const addPaperApplyOtherSems = document.getElementById("addPaperApplyOtherSems");
   const addPaperOtherSemsPanel = document.getElementById("addPaperOtherSemsPanel");
-  const addPaperTargetSessions = document.getElementById("addPaperTargetSessions");
   const addPaperSkipDuplicates = document.getElementById("addPaperSkipDuplicates");
   const btnSelectAllAddSems = document.getElementById("btnSelectAllAddSems");
   const btnClearAddSems = document.getElementById("btnClearAddSems");
@@ -1009,7 +1145,8 @@
     addPaperMessage.textContent = "";
     document.getElementById("addPaperModalSubtitle").textContent = `Session ${year} • Semester ${SEM_ROMAN[sem]} (${SEM_WORD[sem]} Sem)`;
 
-    // Cross-semester settings
+    // Cross-year & cross-semester settings
+    if (addPaperSyncAllYears) addPaperSyncAllYears.checked = true;
     const shouldExpandOther = !!(prefillData && prefillData.applyOther);
     if (addPaperApplyOtherSems) {
       addPaperApplyOtherSems.checked = shouldExpandOther;
@@ -1017,7 +1154,6 @@
         addPaperOtherSemsPanel.style.display = shouldExpandOther ? "block" : "none";
       }
     }
-    if (addPaperTargetSessions) addPaperTargetSessions.value = "current";
     if (addPaperSkipDuplicates) addPaperSkipDuplicates.checked = true;
 
     // Reset target semester checkboxes
@@ -1100,13 +1236,29 @@
     const newId = `y${year}-s${sem}-p${nextIdx}`;
     state.papers[newId] = { code, name, link, status };
 
-    // 2. Also replicate to other selected semesters & sessions if checked
-    let appliedCount = 0;
+    // 2. Automatically synchronize this paper to other academic years for the same semester
+    let syncCount = 0;
+    const syncAllYears = addPaperSyncAllYears ? addPaperSyncAllYears.checked : true;
+    if (syncAllYears) {
+      (state.years || []).forEach((y) => {
+        if (y === year) return;
+        const targetId = `y${y}-s${sem}-p${nextIdx}`;
+        if (!state.papers[targetId]) {
+          state.papers[targetId] = { code, name, link: "", status: "auto" };
+        } else {
+          state.papers[targetId].code = code;
+          state.papers[targetId].name = name;
+        }
+        syncCount++;
+      });
+    }
+
+    // 3. Also replicate to other selected semesters if checked
+    let otherSemAppliedCount = 0;
     if (addPaperApplyOtherSems && addPaperApplyOtherSems.checked) {
       const targetSems = Array.from(document.querySelectorAll(".add-paper-target-sem:checked"))
         .map((cb) => parseInt(cb.value, 10));
-      const targetSessionMode = addPaperTargetSessions ? addPaperTargetSessions.value : "current";
-      const targetYears = targetSessionMode === "all" ? (state.years || [year]) : [year];
+      const targetYears = syncAllYears ? (state.years || [year]) : [year];
       const skipDuplicates = !addPaperSkipDuplicates || addPaperSkipDuplicates.checked;
 
       targetYears.forEach((y) => {
@@ -1129,8 +1281,8 @@
           while (state.papers[`y${y}-s${s}-p${pIdx}`]) {
             pIdx++;
           }
-          state.papers[`y${y}-s${s}-p${pIdx}`] = { code, name, link, status };
-          appliedCount++;
+          state.papers[`y${y}-s${s}-p${pIdx}`] = { code, name, link: "", status: "auto" };
+          otherSemAppliedCount++;
         });
       });
     }
@@ -1139,8 +1291,10 @@
     addPaperModal.classList.remove("open");
     renderArchive();
 
-    if (appliedCount > 0) {
-      showToast(`Added ${code}: ${name} & applied to ${appliedCount} other semester slots!`, "success");
+    if (syncCount > 0 && otherSemAppliedCount > 0) {
+      showToast(`Added ${code}: ${name} across all academic sessions & applied to ${otherSemAppliedCount} other semester slots!`, "success");
+    } else if (syncCount > 0) {
+      showToast(`Added ${code}: ${name} to Semester ${SEM_ROMAN[sem]} across all ${syncCount + 1} academic sessions!`, "success");
     } else {
       showToast(`Added ${code}: ${name}`, "success");
     }

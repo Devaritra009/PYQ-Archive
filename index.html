@@ -326,11 +326,19 @@
           </select>
         </div>
 
-        <!-- Cross-Semester Replication Option -->
+        <!-- Cross-Year & Cross-Semester Replication Options -->
         <div class="form-group cross-sem-box">
+          <label class="checkbox-label" for="addPaperSyncAllYears">
+            <input type="checkbox" id="addPaperSyncAllYears" checked />
+            <span style="font-weight: 600; color: var(--teal);">&#8635; Update in all academic years for this semester</span>
+          </label>
+          <div style="font-size: 11px; color: var(--text-dim); margin: 3px 0 10px 23px;">
+            Automatically applies this paper code & name to other sessions (e.g. 2026, 2025, 2024...).
+          </div>
+
           <label class="checkbox-label" for="addPaperApplyOtherSems">
             <input type="checkbox" id="addPaperApplyOtherSems" />
-            <span style="font-weight: 600; color: var(--teal);">&#10697; Apply this paper & code to other semesters also</span>
+            <span style="color: var(--text-muted);">&#10697; Also apply to other semesters (Sem I–VI)</span>
           </label>
           <div id="addPaperOtherSemsPanel" class="cross-sem-options" style="display: none;">
             <div class="cross-sem-actions-row">
@@ -348,11 +356,6 @@
               <label class="sem-check-item"><input type="checkbox" class="add-paper-target-sem" value="5" /> Sem V</label>
               <label class="sem-check-item"><input type="checkbox" class="add-paper-target-sem" value="6" /> Sem VI</label>
             </div>
-            <div class="cross-sem-sublabel" style="margin-top: 10px;">Apply to Academic Sessions:</div>
-            <select id="addPaperTargetSessions" class="form-input" style="font-size: 12px; padding: 7px 10px;">
-              <option value="current">Current Academic Session Only</option>
-              <option value="all">All Academic Sessions in Archive</option>
-            </select>
             <label class="checkbox-label" for="addPaperSkipDuplicates" style="margin-top: 10px;">
               <input type="checkbox" id="addPaperSkipDuplicates" checked />
               <span>Skip if subject code or name already exists in target</span>

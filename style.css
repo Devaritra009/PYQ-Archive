@@ -592,11 +592,13 @@ body.is-editing .edit-add-year-panel {
 
 .btn-del-year,
 .btn-open-add-paper,
+.btn-sync-sem-years,
 .btn-apply-sem-papers {
   display: none !important;
 }
 body.is-editing .btn-del-year,
 body.is-editing .btn-open-add-paper,
+body.is-editing .btn-sync-sem-years,
 body.is-editing .btn-apply-sem-papers {
   display: inline-flex !important;
 }
