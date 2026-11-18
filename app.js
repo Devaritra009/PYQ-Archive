@@ -225,9 +225,14 @@
   }
 
   let saveTimer = null;
+  let lastSavedStateString = "";
+
   function queueSave() {
+    // Immediately persist locally to localStorage so changes are safe
+    saveArchiveStateLocally();
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(saveArchiveState, 350);
+    // Debounce cloud write to 1200ms while user is actively typing
+    saveTimer = setTimeout(saveArchiveState, 1200);
   }
 
   function saveArchiveStateLocally() {
@@ -243,6 +248,7 @@
     updateStats();
 
     if (isCloudConnected && dbRef) {
+      lastSavedStateString = JSON.stringify(state);
       dbRef.set(state).catch((e) => {
         console.error("Realtime cloud sync error:", e);
         if (e && (e.code === "PERMISSION_DENIED" || (e.message && e.message.includes("permission_denied")))) {
@@ -286,7 +292,19 @@
         (snapshot) => {
           const cloudData = snapshot.val();
           if (cloudData && Array.isArray(cloudData.years) && cloudData.papers) {
+            const incomingStr = JSON.stringify(cloudData);
+            const currentStr = JSON.stringify(state);
+
+            // CRITICAL FIX: If incoming data matches what we just saved locally or our current state,
+            // DO NOT rebuild the DOM! This prevents destroying input elements while the user is typing.
+            if (incomingStr === lastSavedStateString || incomingStr === currentStr) {
+              isCloudConnected = true;
+              updateCloudStatusBadge("live", "Cloud Live");
+              return;
+            }
+
             state = cloudData;
+            lastSavedStateString = incomingStr;
             saveArchiveStateLocally();
             isCloudConnected = true;
             updateCloudStatusBadge("live", "Cloud Live");
@@ -298,6 +316,7 @@
             updateCloudStatusBadge("live", "Cloud Connected (Empty)");
             // If local state exists, push it
             if (state.years && state.years.length > 0) {
+              lastSavedStateString = JSON.stringify(state);
               dbRef.set(state);
             }
           }
@@ -380,6 +399,18 @@
   }
 
   function renderArchive() {
+    // 1. Capture active focus & cursor if user is editing inline
+    let activeInputInfo = null;
+    const activeEl = document.activeElement;
+    if (activeEl && activeEl.classList && activeEl.classList.contains("edit-paper-field")) {
+      activeInputInfo = {
+        id: activeEl.dataset.id,
+        field: activeEl.dataset.field,
+        cursorStart: typeof activeEl.selectionStart === "number" ? activeEl.selectionStart : null,
+        cursorEnd: typeof activeEl.selectionEnd === "number" ? activeEl.selectionEnd : null
+      };
+    }
+
     renderYearNavBar();
 
     const openSet = new Set(
@@ -387,6 +418,12 @@
         (b) => b.dataset.year
       )
     );
+    // Keep year open if an edit input inside it was active
+    if (activeInputInfo && activeInputInfo.id) {
+      const match = activeInputInfo.id.match(/^y(\d+)-/);
+      if (match && match[1]) openSet.add(match[1]);
+    }
+
     const isFirstRender = openSet.size === 0 && yearsContainer.innerHTML.trim() === "";
 
     yearsContainer.innerHTML = "";
@@ -465,7 +502,10 @@
               <span class="sem-roman-badge">SEM ${SEM_ROMAN[s]}</span>
               <span class="sem-name">${SEM_WORD[s]} Semester</span>
             </div>
-            <button class="btn btn-outline-teal btn-open-add-paper" data-year="${year}" data-sem="${s}" style="padding: 3px 8px; font-size: 10px;">+ Add Paper</button>
+            <div class="sem-header-actions">
+              <button class="btn btn-outline-teal btn-open-add-paper" data-year="${year}" data-sem="${s}" style="padding: 3px 8px; font-size: 10px;" title="Add question paper to this semester">+ Add Paper</button>
+              <button class="btn btn-subtle btn-apply-sem-papers" data-year="${year}" data-sem="${s}" style="padding: 3px 8px; font-size: 10px;" title="Apply this semester's subject codes & papers to other semesters">&#10697; Apply to Other Sems</button>
+            </div>
           </div>
           <ul class="paper-list"></ul>
         `;
@@ -540,6 +580,7 @@
                   <option value="auto" ${!isUnavailable ? "selected" : ""}>Auto (Link/Pending)</option>
                   <option value="unavailable" ${isUnavailable ? "selected" : ""}>Unavailable</option>
                 </select>
+                <button class="btn-icon-copy btn-clone-paper" data-id="${paper.id}" title="Apply this paper & code to other semesters">&#10697;</button>
                 <button class="btn-icon-del btn-del-paper" data-id="${paper.id}" title="Delete paper">&times;</button>
               </div>
             `;
@@ -557,6 +598,21 @@
     attachDynamicEventListeners();
     filterPapers();
     updateStats();
+
+    // 2. Restore active input focus and cursor position (never lose user's input/typing position)
+    if (activeInputInfo && activeInputInfo.id && activeInputInfo.field) {
+      const elToFocus = document.querySelector(
+        `.edit-paper-field[data-id="${activeInputInfo.id}"][data-field="${activeInputInfo.field}"]`
+      );
+      if (elToFocus) {
+        elToFocus.focus();
+        if (activeInputInfo.cursorStart !== null && activeInputInfo.cursorEnd !== null) {
+          try {
+            elToFocus.setSelectionRange(activeInputInfo.cursorStart, activeInputInfo.cursorEnd);
+          } catch (e) {}
+        }
+      }
+    }
   }
 
   function updateSinglePaperRow(id) {
@@ -674,6 +730,36 @@
       });
     });
 
+    // Apply Semester Papers trigger (batch copy / replicate to other semesters)
+    document.querySelectorAll(".btn-apply-sem-papers").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const year = btn.dataset.year;
+        const sem = btn.dataset.sem;
+        openApplySemModal(year, sem);
+      });
+    });
+
+    // Clone / Apply individual paper to other semesters
+    document.querySelectorAll(".btn-clone-paper").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const paper = state.papers[id];
+        if (!paper) return;
+        const match = id.match(/^y(\d+)-s(\d+)-/);
+        const year = match ? match[1] : CURRENT_YEAR;
+        const sem = match ? match[2] : 1;
+        openAddPaperModal(year, sem, {
+          code: paper.code || "",
+          name: paper.name || "",
+          link: paper.link || "",
+          status: paper.status || "auto",
+          applyOther: true
+        });
+      });
+    });
+
     // Delete Paper
     document.querySelectorAll(".btn-del-paper").forEach((btn) => {
       btn.addEventListener("click", (e) => {
@@ -699,8 +785,17 @@
         const field = input.dataset.field;
         if (!state.papers[id]) state.papers[id] = { code: "", name: "", link: "", status: "auto" };
         state.papers[id][field] = input.value;
+        clearTimeout(saveTimer);
         saveArchiveState();
         updateSinglePaperRow(id);
+      });
+
+      // Prevent accidental form actions on Enter, commit field and blur
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          input.blur();
+        }
       });
     });
   }
@@ -760,7 +855,11 @@
             year.includes(query) ||
             `sem ${sem}`.includes(query);
 
-          const isVisible = semMatches && statusMatches && textMatches;
+          let isVisible = semMatches && statusMatches && textMatches;
+          // Never hide the row if the user is currently editing inside it
+          if (paperRow.contains(document.activeElement)) {
+            isVisible = true;
+          }
           paperRow.style.display = isVisible ? "" : "none";
           if (isVisible) semHasVisible = true;
         });
@@ -892,19 +991,86 @@
   const addPaperLink = document.getElementById("addPaperLink");
   const addPaperStatus = document.getElementById("addPaperStatus");
   const addPaperMessage = document.getElementById("addPaperMessage");
+  const addPaperApplyOtherSems = document.getElementById("addPaperApplyOtherSems");
+  const addPaperOtherSemsPanel = document.getElementById("addPaperOtherSemsPanel");
+  const addPaperTargetSessions = document.getElementById("addPaperTargetSessions");
+  const addPaperSkipDuplicates = document.getElementById("addPaperSkipDuplicates");
+  const btnSelectAllAddSems = document.getElementById("btnSelectAllAddSems");
+  const btnClearAddSems = document.getElementById("btnClearAddSems");
 
-  function openAddPaperModal(year, sem) {
+  function openAddPaperModal(year, sem, prefillData = null) {
     addPaperYear.value = year;
     addPaperSem.value = sem;
-    addPaperCode.value = "";
-    addPaperName.value = "";
-    addPaperLink.value = "";
-    if (addPaperStatus) addPaperStatus.value = "auto";
+    addPaperCode.value = prefillData ? prefillData.code : "";
+    addPaperName.value = prefillData ? prefillData.name : "";
+    addPaperLink.value = prefillData ? prefillData.link : "";
+    if (addPaperStatus) addPaperStatus.value = prefillData ? prefillData.status : "auto";
     addPaperMessage.className = "form-message";
     addPaperMessage.textContent = "";
     document.getElementById("addPaperModalSubtitle").textContent = `Session ${year} • Semester ${SEM_ROMAN[sem]} (${SEM_WORD[sem]} Sem)`;
+
+    // Cross-semester settings
+    const shouldExpandOther = !!(prefillData && prefillData.applyOther);
+    if (addPaperApplyOtherSems) {
+      addPaperApplyOtherSems.checked = shouldExpandOther;
+      if (addPaperOtherSemsPanel) {
+        addPaperOtherSemsPanel.style.display = shouldExpandOther ? "block" : "none";
+      }
+    }
+    if (addPaperTargetSessions) addPaperTargetSessions.value = "current";
+    if (addPaperSkipDuplicates) addPaperSkipDuplicates.checked = true;
+
+    // Reset target semester checkboxes
+    document.querySelectorAll(".add-paper-target-sem").forEach((cb) => {
+      const isCurrent = cb.value === String(sem);
+      cb.checked = !isCurrent && shouldExpandOther;
+      const parentLabel = cb.closest(".sem-check-item");
+      if (parentLabel) {
+        if (isCurrent) {
+          parentLabel.classList.add("current-sem");
+          cb.disabled = true;
+          parentLabel.title = "Current semester (already adding here)";
+        } else {
+          parentLabel.classList.remove("current-sem");
+          cb.disabled = false;
+          parentLabel.removeAttribute("title");
+        }
+      }
+    });
+
     addPaperModal.classList.add("open");
-    setTimeout(() => addPaperCode.focus(), 50);
+    setTimeout(() => {
+      if (prefillData && prefillData.code) {
+        addPaperName.focus();
+      } else {
+        addPaperCode.focus();
+      }
+    }, 50);
+  }
+
+  if (addPaperApplyOtherSems) {
+    addPaperApplyOtherSems.addEventListener("change", () => {
+      if (addPaperOtherSemsPanel) {
+        addPaperOtherSemsPanel.style.display = addPaperApplyOtherSems.checked ? "block" : "none";
+      }
+    });
+  }
+
+  if (btnSelectAllAddSems) {
+    btnSelectAllAddSems.addEventListener("click", () => {
+      const currentSem = addPaperSem.value;
+      document.querySelectorAll(".add-paper-target-sem").forEach((cb) => {
+        if (cb.value !== currentSem) cb.checked = true;
+      });
+    });
+  }
+
+  if (btnClearAddSems) {
+    btnClearAddSems.addEventListener("click", () => {
+      document.querySelectorAll(".add-paper-target-sem").forEach((cb) => {
+        cb.checked = false;
+      });
+    });
   }
 
   document.getElementById("btnCancelAddPaper").addEventListener("click", () => {
@@ -913,8 +1079,8 @@
 
   document.getElementById("addPaperForm").addEventListener("submit", (e) => {
     e.preventDefault();
-    const year = addPaperYear.value;
-    const sem = addPaperSem.value;
+    const year = parseInt(addPaperYear.value, 10);
+    const sem = parseInt(addPaperSem.value, 10);
     const code = addPaperCode.value.trim();
     const name = addPaperName.value.trim();
     const link = sanitizeUrl(addPaperLink.value.trim());
@@ -926,6 +1092,7 @@
       return;
     }
 
+    // 1. Add paper to primary semester
     let nextIdx = 1;
     while (state.papers[`y${year}-s${sem}-p${nextIdx}`]) {
       nextIdx++;
@@ -933,10 +1100,237 @@
     const newId = `y${year}-s${sem}-p${nextIdx}`;
     state.papers[newId] = { code, name, link, status };
 
+    // 2. Also replicate to other selected semesters & sessions if checked
+    let appliedCount = 0;
+    if (addPaperApplyOtherSems && addPaperApplyOtherSems.checked) {
+      const targetSems = Array.from(document.querySelectorAll(".add-paper-target-sem:checked"))
+        .map((cb) => parseInt(cb.value, 10));
+      const targetSessionMode = addPaperTargetSessions ? addPaperTargetSessions.value : "current";
+      const targetYears = targetSessionMode === "all" ? (state.years || [year]) : [year];
+      const skipDuplicates = !addPaperSkipDuplicates || addPaperSkipDuplicates.checked;
+
+      targetYears.forEach((y) => {
+        targetSems.forEach((s) => {
+          if (y === year && s === sem) return; // already added above
+
+          if (skipDuplicates) {
+            const exists = Object.entries(state.papers).some(([k, p]) => {
+              return (
+                k.startsWith(`y${y}-s${s}-`) &&
+                p &&
+                ((p.code && p.code.trim().toLowerCase() === code.toLowerCase()) ||
+                  (p.name && p.name.trim().toLowerCase() === name.toLowerCase()))
+              );
+            });
+            if (exists) return;
+          }
+
+          let pIdx = 1;
+          while (state.papers[`y${y}-s${s}-p${pIdx}`]) {
+            pIdx++;
+          }
+          state.papers[`y${y}-s${s}-p${pIdx}`] = { code, name, link, status };
+          appliedCount++;
+        });
+      });
+    }
+
     saveArchiveState();
     addPaperModal.classList.remove("open");
     renderArchive();
-    showToast(`Added ${code}: ${name}`, "success");
+
+    if (appliedCount > 0) {
+      showToast(`Added ${code}: ${name} & applied to ${appliedCount} other semester slots!`, "success");
+    } else {
+      showToast(`Added ${code}: ${name}`, "success");
+    }
+  });
+
+  // Apply Semester Papers to Other Semesters Modal Controller
+  const applySemModal = document.getElementById("applySemModal");
+  const applySemSourceYear = document.getElementById("applySemSourceYear");
+  const applySemSourceSem = document.getElementById("applySemSourceSem");
+  const applySemPapersList = document.getElementById("applySemPapersList");
+  const applySemTargetSessions = document.getElementById("applySemTargetSessions");
+  const applySemSkipDuplicates = document.getElementById("applySemSkipDuplicates");
+  const applySemIncludeLinks = document.getElementById("applySemIncludeLinks");
+  const applySemMessage = document.getElementById("applySemMessage");
+  const btnSelectAllSourcePapers = document.getElementById("btnSelectAllSourcePapers");
+  const btnDeselectAllSourcePapers = document.getElementById("btnDeselectAllSourcePapers");
+  const btnSelectAllTargetSems = document.getElementById("btnSelectAllTargetSems");
+  const btnClearTargetSems = document.getElementById("btnClearTargetSems");
+  const btnCancelApplySem = document.getElementById("btnCancelApplySem");
+
+  function openApplySemModal(year, sem) {
+    if (!applySemModal) return;
+    applySemSourceYear.value = year;
+    applySemSourceSem.value = sem;
+    applySemMessage.textContent = "";
+    applySemMessage.className = "form-message";
+
+    document.getElementById("applySemModalSubtitle").textContent = `Source: Session ${year} • Semester ${SEM_ROMAN[sem]} (${SEM_WORD[sem]} Sem)`;
+
+    // Gather papers from source semester
+    const semPapers = [];
+    for (let i = 1; i <= 30; i++) {
+      const id = `y${year}-s${sem}-p${i}`;
+      if (state.papers[id] && state.papers[id].name) {
+        semPapers.push({ id, ...state.papers[id] });
+      }
+    }
+
+    applySemPapersList.innerHTML = "";
+    if (semPapers.length === 0) {
+      applySemPapersList.innerHTML = `<div style="color: var(--text-dim); padding: 10px; font-size: 12px; text-align: center;">No question papers currently exist in this semester. Add papers first.</div>`;
+    } else {
+      semPapers.forEach((p) => {
+        const label = document.createElement("label");
+        label.className = "paper-check-item";
+        label.innerHTML = `
+          <input type="checkbox" class="source-paper-cb" data-id="${p.id}" checked />
+          <span class="paper-check-code">${escapeHtml(p.code || "PAPER")}</span>
+          <span class="paper-check-name">${escapeHtml(p.name)}</span>
+        `;
+        applySemPapersList.appendChild(label);
+      });
+    }
+
+    // Reset target semester checkboxes
+    document.querySelectorAll(".apply-target-sem").forEach((cb) => {
+      const isSource = cb.value === String(sem);
+      cb.checked = false;
+      const parentLabel = cb.closest(".sem-check-item");
+      if (parentLabel) {
+        if (isSource) {
+          parentLabel.classList.add("current-sem");
+          cb.disabled = true;
+          parentLabel.title = "Source semester";
+        } else {
+          parentLabel.classList.remove("current-sem");
+          cb.disabled = false;
+          parentLabel.removeAttribute("title");
+        }
+      }
+    });
+
+    if (applySemTargetSessions) applySemTargetSessions.value = "current";
+    if (applySemSkipDuplicates) applySemSkipDuplicates.checked = true;
+    if (applySemIncludeLinks) applySemIncludeLinks.checked = false;
+
+    applySemModal.classList.add("open");
+  }
+
+  if (btnCancelApplySem) {
+    btnCancelApplySem.addEventListener("click", () => {
+      applySemModal.classList.remove("open");
+    });
+  }
+
+  if (btnSelectAllSourcePapers) {
+    btnSelectAllSourcePapers.addEventListener("click", () => {
+      document.querySelectorAll(".source-paper-cb").forEach((cb) => (cb.checked = true));
+    });
+  }
+
+  if (btnDeselectAllSourcePapers) {
+    btnDeselectAllSourcePapers.addEventListener("click", () => {
+      document.querySelectorAll(".source-paper-cb").forEach((cb) => (cb.checked = false));
+    });
+  }
+
+  if (btnSelectAllTargetSems) {
+    btnSelectAllTargetSems.addEventListener("click", () => {
+      const sourceSem = applySemSourceSem.value;
+      document.querySelectorAll(".apply-target-sem").forEach((cb) => {
+        if (cb.value !== sourceSem) cb.checked = true;
+      });
+    });
+  }
+
+  if (btnClearTargetSems) {
+    btnClearTargetSems.addEventListener("click", () => {
+      document.querySelectorAll(".apply-target-sem").forEach((cb) => (cb.checked = false));
+    });
+  }
+
+  document.getElementById("applySemForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const sourceYear = parseInt(applySemSourceYear.value, 10);
+    const sourceSem = parseInt(applySemSourceSem.value, 10);
+
+    const selectedPaperIds = Array.from(document.querySelectorAll(".source-paper-cb:checked"))
+      .map((cb) => cb.dataset.id);
+
+    if (selectedPaperIds.length === 0) {
+      applySemMessage.textContent = "Please select at least one paper from this semester to apply.";
+      applySemMessage.className = "form-message error";
+      return;
+    }
+
+    const targetSems = Array.from(document.querySelectorAll(".apply-target-sem:checked"))
+      .map((cb) => parseInt(cb.value, 10));
+
+    if (targetSems.length === 0) {
+      applySemMessage.textContent = "Please select at least one target semester to apply papers to.";
+      applySemMessage.className = "form-message error";
+      return;
+    }
+
+    const sessionMode = applySemTargetSessions ? applySemTargetSessions.value : "current";
+    const targetYears = sessionMode === "all" ? (state.years || [sourceYear]) : [sourceYear];
+    const skipDuplicates = !applySemSkipDuplicates || applySemSkipDuplicates.checked;
+    const includeLinks = !!(applySemIncludeLinks && applySemIncludeLinks.checked);
+
+    let appliedTotal = 0;
+    let skippedTotal = 0;
+
+    targetYears.forEach((year) => {
+      targetSems.forEach((sem) => {
+        if (year === sourceYear && sem === sourceSem) return; // avoid source semester
+
+        selectedPaperIds.forEach((pId) => {
+          const sourcePaper = state.papers[pId];
+          if (!sourcePaper) return;
+
+          const code = sourcePaper.code || "";
+          const name = sourcePaper.name || "";
+          const link = includeLinks ? (sourcePaper.link || "") : "";
+          const status = includeLinks ? (sourcePaper.status || "auto") : "auto";
+
+          if (skipDuplicates) {
+            const exists = Object.entries(state.papers).some(([k, p]) => {
+              return (
+                k.startsWith(`y${year}-s${sem}-`) &&
+                p &&
+                ((code && p.code && p.code.trim().toLowerCase() === code.trim().toLowerCase()) ||
+                  (name && p.name && p.name.trim().toLowerCase() === name.trim().toLowerCase()))
+              );
+            });
+            if (exists) {
+              skippedTotal++;
+              return;
+            }
+          }
+
+          let pIdx = 1;
+          while (state.papers[`y${year}-s${sem}-p${pIdx}`]) {
+            pIdx++;
+          }
+          state.papers[`y${year}-s${sem}-p${pIdx}`] = { code, name, link, status };
+          appliedTotal++;
+        });
+      });
+    });
+
+    saveArchiveState();
+    applySemModal.classList.remove("open");
+    renderArchive();
+
+    let feedbackMsg = `Applied ${appliedTotal} paper${appliedTotal === 1 ? "" : "s"} across ${targetSems.length} semester${targetSems.length === 1 ? "" : "s"}!`;
+    if (skippedTotal > 0) {
+      feedbackMsg += ` (${skippedTotal} duplicate${skippedTotal === 1 ? "" : "s"} skipped)`;
+    }
+    showToast(feedbackMsg, "success");
   });
 
   /* ==========================================================================
@@ -1354,6 +1748,7 @@
         return;
       }
       showToast("Uploading papers to Cloud DB...", "info");
+      lastSavedStateString = JSON.stringify(state);
       dbRef.set(state)
         .then(() => {
           isCloudConnected = true;

@@ -325,6 +325,41 @@
             <option value="unavailable">Mark as Unavailable (Exam not held / Paper unavailable)</option>
           </select>
         </div>
+
+        <!-- Cross-Semester Replication Option -->
+        <div class="form-group cross-sem-box">
+          <label class="checkbox-label" for="addPaperApplyOtherSems">
+            <input type="checkbox" id="addPaperApplyOtherSems" />
+            <span style="font-weight: 600; color: var(--teal);">&#10697; Apply this paper & code to other semesters also</span>
+          </label>
+          <div id="addPaperOtherSemsPanel" class="cross-sem-options" style="display: none;">
+            <div class="cross-sem-actions-row">
+              <span class="cross-sem-sublabel" style="margin-bottom: 0;">Target Semesters:</span>
+              <div class="btn-xs-group">
+                <button type="button" id="btnSelectAllAddSems" class="btn btn-subtle btn-xs">All Other Sems</button>
+                <button type="button" id="btnClearAddSems" class="btn btn-subtle btn-xs">Clear</button>
+              </div>
+            </div>
+            <div class="sem-checkbox-grid">
+              <label class="sem-check-item"><input type="checkbox" class="add-paper-target-sem" value="1" /> Sem I</label>
+              <label class="sem-check-item"><input type="checkbox" class="add-paper-target-sem" value="2" /> Sem II</label>
+              <label class="sem-check-item"><input type="checkbox" class="add-paper-target-sem" value="3" /> Sem III</label>
+              <label class="sem-check-item"><input type="checkbox" class="add-paper-target-sem" value="4" /> Sem IV</label>
+              <label class="sem-check-item"><input type="checkbox" class="add-paper-target-sem" value="5" /> Sem V</label>
+              <label class="sem-check-item"><input type="checkbox" class="add-paper-target-sem" value="6" /> Sem VI</label>
+            </div>
+            <div class="cross-sem-sublabel" style="margin-top: 10px;">Apply to Academic Sessions:</div>
+            <select id="addPaperTargetSessions" class="form-input" style="font-size: 12px; padding: 7px 10px;">
+              <option value="current">Current Academic Session Only</option>
+              <option value="all">All Academic Sessions in Archive</option>
+            </select>
+            <label class="checkbox-label" for="addPaperSkipDuplicates" style="margin-top: 10px;">
+              <input type="checkbox" id="addPaperSkipDuplicates" checked />
+              <span>Skip if subject code or name already exists in target</span>
+            </label>
+          </div>
+        </div>
+
         <div id="addPaperMessage" class="form-message"></div>
         <div class="form-actions">
           <button type="submit" id="btnSubmitAddPaper" class="btn btn-teal" style="flex: 1;">Save Paper</button>
@@ -438,6 +473,78 @@
           <button type="button" id="btnUploadLocalToCloud" class="btn btn-outline-teal" title="Sync existing local papers to cloud">&#8679; Upload Local Data to Cloud</button>
           <button type="button" id="btnResetCloudConfig" class="btn btn-subtle" title="Reset to local storage">Disconnect</button>
           <button type="button" id="btnCloseCloudConfig" class="btn btn-subtle">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 8: Apply Semester Papers to Other Semesters -->
+  <div id="applySemModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <div class="modal-eyebrow">Curriculum Replication</div>
+        <h2 class="modal-title">Apply Papers to Other Semesters</h2>
+        <div class="modal-subtitle" id="applySemModalSubtitle">Source semester details</div>
+      </div>
+      <form id="applySemForm" onsubmit="return false;">
+        <input type="hidden" id="applySemSourceYear" />
+        <input type="hidden" id="applySemSourceSem" />
+
+        <div class="form-group">
+          <div class="form-label-row">
+            <label class="form-label">Select Papers to Apply:</label>
+            <div class="btn-xs-group">
+              <button type="button" id="btnSelectAllSourcePapers" class="btn btn-subtle btn-xs">All</button>
+              <button type="button" id="btnDeselectAllSourcePapers" class="btn btn-subtle btn-xs">None</button>
+            </div>
+          </div>
+          <div id="applySemPapersList" class="papers-checklist-box">
+            <!-- Dynamically populated paper checklist -->
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="form-label-row">
+            <label class="form-label">Target Semesters:</label>
+            <div class="btn-xs-group">
+              <button type="button" id="btnSelectAllTargetSems" class="btn btn-subtle btn-xs">All Other Sems</button>
+              <button type="button" id="btnClearTargetSems" class="btn btn-subtle btn-xs">Clear</button>
+            </div>
+          </div>
+          <div class="sem-checkbox-grid">
+            <label class="sem-check-item"><input type="checkbox" class="apply-target-sem" value="1" /> Sem I</label>
+            <label class="sem-check-item"><input type="checkbox" class="apply-target-sem" value="2" /> Sem II</label>
+            <label class="sem-check-item"><input type="checkbox" class="apply-target-sem" value="3" /> Sem III</label>
+            <label class="sem-check-item"><input type="checkbox" class="apply-target-sem" value="4" /> Sem IV</label>
+            <label class="sem-check-item"><input type="checkbox" class="apply-target-sem" value="5" /> Sem V</label>
+            <label class="sem-check-item"><input type="checkbox" class="apply-target-sem" value="6" /> Sem VI</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Target Academic Sessions:</label>
+          <select id="applySemTargetSessions" class="form-input" style="font-size: 12px; padding: 7px 10px;">
+            <option value="current">Current Academic Session Only</option>
+            <option value="all">All Academic Sessions in Archive</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+          <label class="checkbox-label" for="applySemSkipDuplicates">
+            <input type="checkbox" id="applySemSkipDuplicates" checked />
+            <span>Skip duplicate papers (if code/name already exists in target)</span>
+          </label>
+          <label class="checkbox-label" for="applySemIncludeLinks">
+            <input type="checkbox" id="applySemIncludeLinks" />
+            <span>Include download links (uncheck to copy subject codes & names only)</span>
+          </label>
+        </div>
+
+        <div id="applySemMessage" class="form-message"></div>
+
+        <div class="form-actions">
+          <button type="submit" id="btnSubmitApplySem" class="btn btn-teal" style="flex: 1;">&#10003; Apply Papers</button>
+          <button type="button" id="btnCancelApplySem" class="btn btn-subtle">Cancel</button>
         </div>
       </form>
     </div>
