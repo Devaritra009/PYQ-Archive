@@ -315,8 +315,6 @@
     }
   }
 
-  let cloudConnectionTimer = null;
-
   function initCloudDatabase() {
     const config = getCloudConfig();
     if (!window.firebase || !window.firebase.database) {
@@ -327,7 +325,6 @@
 
     const dbUrl = (config.databaseURL || "").trim();
     if (!dbUrl) {
-      // No cloud DB configured: cleanly operate in fast local mode without throwing network errors
       updateCloudStatusBadge("local", "Local Mode");
       return;
     }
@@ -344,27 +341,16 @@
       const db = firebase.database(app);
       dbRef = db.ref("archive");
 
-      // Set fallback timeout so it never hangs indefinitely in "Connecting Cloud..."
-      if (cloudConnectionTimer) clearTimeout(cloudConnectionTimer);
-      cloudConnectionTimer = setTimeout(() => {
-        if (!isCloudConnected) {
-          updateCloudStatusBadge("local", "Local Mode (Offline)");
-        }
-      }, 5000);
-
       // Listen to Firebase's official connection state (.info/connected)
       const connectedRef = db.ref(".info/connected");
       connectedRef.on("value", (snap) => {
         const isConnected = snap.val() === true;
         if (isConnected) {
-          if (cloudConnectionTimer) clearTimeout(cloudConnectionTimer);
           isCloudConnected = true;
           updateCloudStatusBadge("live", "Cloud Live");
-        } else {
-          if (isCloudConnected) {
-            isCloudConnected = false;
-            updateCloudStatusBadge("connecting", "Reconnecting Cloud...");
-          }
+        } else if (isCloudConnected) {
+          isCloudConnected = false;
+          updateCloudStatusBadge("connecting", "Reconnecting Cloud...");
         }
       });
 
@@ -372,7 +358,6 @@
       dbRef.on(
         "value",
         (snapshot) => {
-          if (cloudConnectionTimer) clearTimeout(cloudConnectionTimer);
           const cloudData = snapshot.val();
           if (cloudData && Array.isArray(cloudData.years) && cloudData.papers) {
             const incomingStr = JSON.stringify(cloudData);
@@ -405,7 +390,6 @@
           }
         },
         (error) => {
-          if (cloudConnectionTimer) clearTimeout(cloudConnectionTimer);
           console.error("Firebase Realtime Database error:", error);
           isCloudConnected = false;
           if (error && (error.code === "PERMISSION_DENIED" || (error.message && error.message.toLowerCase().includes("permission_denied")))) {
@@ -416,7 +400,6 @@
         }
       );
     } catch (err) {
-      if (cloudConnectionTimer) clearTimeout(cloudConnectionTimer);
       console.error("Failed to initialize Firebase Realtime Database:", err);
       isCloudConnected = false;
       updateCloudStatusBadge("local", "Local Mode");
