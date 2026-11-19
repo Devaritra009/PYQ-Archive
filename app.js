@@ -181,8 +181,8 @@
    */
   const DEFAULT_FIREBASE_CONFIG = {
     apiKey: "",
-    databaseURL: "",
-    projectId: ""
+    databaseURL: "https://pyq-archive-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "pyq-archive-default-rtdb"
   };
 
   let state = {
